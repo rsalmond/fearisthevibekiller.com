@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>jQuery Timeline plugin</title>
+<meta name="description" content="Content Timeline HTML5/jQuery plugin">
+
+<link href="css/style.css" rel="stylesheet" type="text/css" />
+
+
+</head>
+<body>
+
+<div class="selectors"><a href="index.html">Flat preview</a><a href="light.html">Light preview</a> <a href="card.html">Card style</a> <a href="dark.html">Dark preview</a><a href="http://www.webmaster-tips.net/Joomla-Extensions/Joomla-Modules/WMT-Content-Timeline-Powerful-Content-Display.html" style="text-decoration: underline;">Joomla! Version</a></div>
+
+
+<div class="help">
+
+<h2>How does it work</h2>
+
+<p>Content timeline is powerful and lightweight jQuery plugin, best for displaying date organised content. It is fully customizable, and easily integrateable with any js script, video, flesh etc. Well structured code, and wide ranged API functions make it simple to get started and flexible for customization.</p>
+
+<img class="big_image" src="images/preview-image.png" alt=""/>
+
+
+<h2>How does it work</h2>
+
+
+<ol>
+<li>Take any content</li>
+<li>Sort it by date</li>
+<li>Call function</li>
+<li>You are ready to go!</li>
+
+</ol>
+
+<h2>Calling</h2>
+
+
+<p>All you need to do is call:</p>
+<pre><code><span class="red">$('#myTimeline')</span>.timeline();</code></pre>
+<br />
+<p>And format elements like this:</p>
+<pre><code>&lt;div class="timelineLoader"&gt;
+	&lt;img src="images/timeline/loadingAnimation.gif" /&gt;&lt;!-- loader GIF --&gt;
+&lt;/div&gt;
+
+&lt;div <span class="red">id="myTimeline"</span>&gt;<br />
+  &lt;div <span class="green">class="item"</span> <span class="blue">data-name="name"</span> <span class="orange"> data-id="26/08/2012"</span> <span class="purple">data-description="Some description..."</span>&gt;
+	... Shorter version of content ...		
+  &lt;/div&gt;
+  &lt;div <span class="green">class="item_open"</span> <span class="orange">data-id="26/08/2012"</span>&gt;
+	... Detailed version of content ...		
+  &lt;/div&gt;
+  
+  
+    
+  <span style="color:#222222;">... or if you want to load open item content with ajax ...</span>
+  &lt;div <span class="green">class="item"</span> data-id="26/08/2012" data-description="Some description..."&gt;
+	... Shorter version of content ...		
+  &lt;/div&gt;
+  &lt;div <span class="green">class="item_open"</span> data-id="26/08/2012" <span style="color:#222222;">data-access="url_of_full_content"</span>&gt;
+    <span style="color:#222222;">&lt;div class="item_open_content"&gt;
+      &lt;img class="ajaxloader" src="images/timeline/loadingAnimation.gif" alt="" /&gt;
+    &lt;/div&gt;</span>
+  &lt;/div&gt;
+  
+  .
+  .
+  
+&lt;/div&gt;
+
+
+<span class="red">* Can be ID or Class of element.</span>
+<span class="green">* Default classes, can be changed on function call.</span>
+<span class="blue">* If set changes name of timeline node for current item.</span>
+<span class="orange">* Categorizing parameter, in this case date of element (DD/MM/YYYY format).</span>
+<span class="purple">* Optional, short description.</span>
+
+</code></pre>
+
+
+<img class="big_image" src="images/preview-timeline.png" alt=""/>
+<h2>CSS styling</h2>
+Hierarchy of html elements used in timeline:
+<pre><code><span class="purple">&lt;!--- line ---&gt;</span>
+
+&lt;div <span class="green">class="timeline_line"</span>&gt;
+  &lt;div <span class="green">id="t_line_left"</span>&gt;&lt;/div&gt;&lt;div <span class="green">id="t_line_right"</span>&gt;&lt;/div&gt;
+    &lt;div <span class="green">class="t_line_holder"</span>&gt;
+      &lt;div <span class="green">class="t_line_wrapper"</span>&gt;
+        &lt;div <span class="green">class="t_line_view"</span>&gt;
+          &lt;h3 <span class="green">class="t_line_year"</span>&gt;2012&lt;/h3&gt;
+          &lt;div <span class="green">class="t_line_m"</span>&gt;
+            &lt;h4 <span class="green">class="t_line_month"</span>&gt;May&lt;/h4&gt;
+            &lt;a href="#04/06/2012" <span class="green">class="t_line_node"</span>&gt;4&lt;span <span class="green">class="t_node_desc"</span>&gt;Some item description...&lt;/span&gt;&lt;/a&gt;
+            &lt;a href="#12/06/2012" <span class="green">class="t_line_node"</span>&gt;12&lt;span <span class="green">class="t_node_desc"</span>&gt;Some item description...&lt;/span&gt;&lt;/a&gt;
+            .
+            .
+            .
+          &lt;/div&gt;
+          &lt;div <span class="green">class="t_line_m right"</span>&gt;
+            &lt;h4 <span class="green">class="t_line_month"</span>&gt;June&lt;/h4&gt;
+            &lt;a href="#04/06/2012" <span class="green">class="t_line_node"</span>&gt;4&lt;span <span class="green">class="t_node_desc"</span>&gt;Some item description...&lt;/span&gt;&lt;/a&gt;
+            &lt;a href="#12/06/2012" <span class="green">class="t_line_node"</span>&gt;12&lt;span <span class="green">class="t_node_desc"</span>&gt;Some item description...&lt;/span&gt;&lt;/a&gt;
+            .
+            .
+            .		 
+          &lt;/div&gt;
+        &lt;/div&gt;
+		
+        &lt;div <span class="green">class="t_line_view"</span>&gt;
+        .
+        .
+        .
+        &lt;/div&gt;		
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+<span class="purple">&lt;!--- items ---&gt;</span>
+
+&lt;div <span class="green">class="timeline_items"</span>&gt;
+
+  &lt;div <span class="green">class="item"</span> data-id="26/08/2012" data-description="Some description..."&gt;
+	... Shorter version of content ...		
+  &lt;/div&gt;
+  &lt;div <span class="green">class="item_open"</span> data-id="26/08/2012"&gt;
+	... Detailed version of content ...		
+  &lt;/div&gt;
+  
+  .
+  .
+  .
+  
+&lt;/div&gt;
+
+<span class="purple">&lt;!--- controles ---&gt;</span>
+
+&lt;div <span class="green">class="t_controles"</span>&gt;
+  &lt;div <span class="green">class="t_left"</span>&gt;&lt;/div&gt;
+  &lt;div <span class="green">class="t_right"</span>&gt;&lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+
+Every element is generated with necessary CSS properties so all that's left for you to do is change backgrounds, colors and position them to your liking. If you don't want to go overboard with restyling you can always use one of our styles shipped with plugin and tweak them to suit your taste.
+<br /><br />
+Only thing that u can't change are margines and padding of '.item' and 'item_open' elements, this must be done through parameters.
+
+
+<h2>Parameters</h2>
+You can modify timeline by using optional parameters argument:
+<pre><code>$('#myTimeline').timeline({
+  <span class="orange">name : value</span>
+});
+</code></pre>
+<br />
+<p>
+List of available parameters:
+</p>
+<table>
+	<tr>
+		<th>Name</th>
+		<th>Default</th>
+		<th>Description</th>
+	</tr>
+	
+	<tr>
+		<td>itemClass</td>
+		<td>'.item'</td>
+		<td>Class used for items</td>
+	</tr>
+	
+	<tr>
+		<td>itemOpenClass</td>
+		<td>'.item_open'</td>
+		<td>Class used for item details</td>
+	</tr>
+	
+	<tr>
+		<td>openTriggerClass</td>
+		<td>'.item'</td>
+		<td>Class of read more element (default uses whole '.item' to trigger open event), if you change it have in mind that element you use it on should have 'data-id' with value same as parrent '.item'.</td>
+	</tr>
+	
+	<tr>
+		<td>closeText</td>
+		<td>'Close'</td>
+		<td>Text of 'close' button in open item (can be left blank)</td>
+	</tr>
+	
+	<tr>
+		<td>itemMargin</td>
+		<td>10</td>
+		<td>Spacing between items</td>
+	</tr>
+	
+	<tr>
+		<td>scrollSpeed</td>
+		<td>500</td>
+		<td>Transition speed between two elements.</td>
+	</tr>
+	
+	<tr>
+		<td>startItem</td>
+		<td>'last'</td>
+		<td>Timeline start item 'data-id' ('last' or 'first' can be used insted).</td>
+	</tr>
+	
+	<tr>
+		<td>easing</td>
+		<td>'easeOutSine'</td>
+		<td>JQuery.easing function for animations</td>
+	</tr>
+	
+	<tr>
+		<td>hideTimeline</td>
+		<td>false</td>
+		<td>Remove timeline</td>
+	</tr>
+	
+	<tr>
+		<td>hideControles</td>
+		<td>false</td>
+		<td>Remove left/right controles</td>
+	</tr>
+	
+	
+	<tr>
+		<td>swipeOn</td>
+		<td>true</td>
+		<td>Turn on swipe moving function</td>
+	</tr>
+	
+	<tr>
+		<td>closeItemOnTransition</td>
+		<td>false</td>
+		<td>Doesn't open item after transition (if true)</td>
+	</tr>
+	<tr>
+		<td>ajaxFailMessage</td>
+		<td>'Ajax request has failed.'</td>
+		<td>Message shown when content of opened item fails to load</td>
+	</tr>
+</table>
+
+<p>
+Timeline categorising parameters:
+</p>
+
+<table>
+	<tr>
+		<th>Name</th>
+		<th>Default</th>
+	</tr>
+	
+	<tr>
+		<td>categories</td>
+		<td>['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']</td>
+	</tr>
+	
+	<tr>
+		<td>nuberOfSegments</td>
+		<td>[31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]</td>
+	</tr>
+	
+	<tr>
+		<td>yearsOn</td>
+		<td>true</td>
+	</tr>
+	
+	
+	
+</table>
+'categories' are used for reorganizing timeline to your needs, it doesn't have to be "date timeline" anymore. You can set your personal array which will be used to generate timeline. If 'categories' are set to false, timeline will be categorized only by one number. 'nuberOfSegments' represents number of days/items that can be placed in each category (if no categories set as number, not array). If you don't need years you can turn them off by setting 'yearsOn' to false. Years can be used as special numbering to your categories. 
+<br /><br />
+data-ids should be formated like this "itemNumber/category/yearOrSomeOtherNumber" or "itemNumber/category". If 'categories' parameter is false, data-ids should look like "itemNumber"
+
+
+<div class="half_page first">
+<h2>Methods</h2>
+
+Methods are called through '.timeline' function:
+<table>
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('init')</td>
+		<td>Initialises timeline</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('destroy')</td>
+		<td>Clears timeline data</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('left')</td>
+		<td>Moves one left by one element</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('right')</td>
+		<td>Moves right by one element</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('open', id)</td>
+		<td>Opens element with 'data-id' = id</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('close', id)</td>
+		<td>Closes element with 'data-id' = id</td>
+	</tr>
+	
+	<tr>
+		<td>$.timeline('goTo', id)</td>
+		<td>Goes to element width 'data-id' = id</td>
+	</tr>
+</table>
+
+<br />
+<p>
+Methods binded on keyboard events:
+</p>
+<table>
+	<tr>
+		<th>Event</th>
+		<th>Method</th>
+	</tr>
+	
+	<tr>
+		<td>On KeyPress (left)</td>
+		<td>trigger $.timeline('left')</td>
+	</tr>
+	
+	<tr>
+		<td>On KeyPress (right)</td>
+		<td>trigger $.timeline('right')</td>
+	</tr>
+	
+</table>
+</div>
+
+<div class="half_page">
+<h2>Events</h2>
+
+Events are called through '.timeline' class:
+<table>
+	<tr>
+		<th>Name</th>
+		<th>Description</th>
+	</tr>
+	
+	<tr>
+		<td>'init.timeline'</td>
+		<td>Triggered when timeline is initialised</td>
+	</tr>
+	
+	<tr>
+		<td>'scrollStart.timeline'</td>
+		<td>Triggered when item move animation starts</td>
+	</tr>
+	
+	<tr>
+		<td>'scrollEnd.timeline'</td>
+		<td>Triggered when item move animation ends</td>
+	</tr>
+	
+	<tr>
+		<td>'itemOpen.timeline'</td>
+		<td>Triggered on click to open item</td>
+	</tr>
+	
+	<tr>
+		<td>'itemClose.timeline'</td>
+		<td>Triggered on click to close item</td>
+	</tr>
+</table>
+
+</div>
+<div class="clear"></div>
+<h2>Requirements</h2>
+<p>
+Required: <a href="http://jquery.com/">jQuery 1.3+</a><br />
+Extra: Use <a href="http://gsgd.co.uk/sandbox/jquery/easing/">jQuery Easing</a> for additional easing options.
+</p>
+<br />
+<br />
+<br />
+</div>
+</body>
+</html>

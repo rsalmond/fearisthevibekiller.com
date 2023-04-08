@@ -1,0 +1,154 @@
+#theme_panel{
+	width: 260px;
+	height: auto;
+	background-color:#1e1e1e;
+	z-index: 500;
+	top:17%;
+	color:#9b9b9b;
+	border-bottom-right-radius: 10px;
+	box-shadow: 3px 3px 15px rgba(0,0,0,0.2);
+	cursor: default;
+	padding-bottom:20px;
+	-webkit-transition: all 0.5s;
+	-moz-transition: all 0.5s;
+	transition: all 0.5s;
+}
+
+#theme_panel a{
+	cursor: pointer;
+	font-size:12px;
+}
+
+#theme_panel.close_panel{
+	left:-260px;
+}
+
+#theme_panel.open_panel{
+	left:0;
+}
+
+#theme_panel #theme_panel_button{
+	width:44px;
+	height: 44px;
+	top:0;
+	position: absolute;
+	right: -44px;
+	background-color:#1e1e1e;
+	display: block;
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+	color:inherit;
+	text-align: center;
+	font-size: 18px;
+	text-indent:-2px;
+	line-height: 44px;
+}
+
+#theme_panel .theme_panel_inner{
+	width: 100%;
+	position: relative;
+	height: auto;
+	border-bottom:1px solid #292929;
+	padding:16px 20px;
+}
+
+#theme_panel .theme_panel_inner:last-child{
+	border-bottom:1px solid transparent;
+}
+
+#theme_panel h2.theme_panel_header{
+	color:inherit;
+	font-size:21px;
+	margin:10px 0 0;
+	padding:0;
+}
+
+#theme_panel h3.theme_panel_header{
+	color:inherit;
+	font-size:14px;
+	margin:0 0 15px;
+	padding:0;
+}
+
+#theme_panel .theme_panel_link{
+	width: auto;
+	height: auto;
+	padding:6px 20px;
+	display: inline-block;
+	border:1px solid #282828;
+	background:#232323;
+	color:inherit;
+	margin-right: 7px;
+}
+
+#theme_panel span.minimal_note{
+	font-size:12px;
+	line-height: 18px;
+}
+
+#theme_panel a.color_link,
+#theme_panel a.color_link_head{
+	width: 30px;
+	height: 20px;
+	display: inline-block;
+	border:1px solid #282828;
+	margin-right: 2px;
+}
+
+#theme_panel a.white{
+	background-color:white;
+}
+
+#theme_panel a.black{
+	background-color:black;
+}
+
+#theme_panel a.blue{
+	background-color:dodgerblue;
+}
+
+#theme_panel a.gold{
+	background-color:gold;
+}
+
+#theme_panel a.lightcoral{
+	background-color:lightcoral;
+}
+
+#theme_panel a.lightsteelblue{
+	background-color:lightsteelblue;
+}
+
+#theme_panel a.limegreen{
+	background-color:limegreen;
+}
+
+#theme_panel a.orange{
+	background-color:orange;
+}
+
+#theme_panel a.palevioletred{
+	background-color:palevioletred;
+}
+
+#theme_panel a.red{
+	background-color:#d71818;
+}
+
+#theme_panel a.steelblue{
+	background-color:steelblue;
+}
+
+#theme_panel a.mediumpurple{
+	background-color:mediumpurple;
+}
+
+#theme_panel a.yellowgreen{
+	background-color:yellowgreen;
+}
+
+#theme_panel a.lightslategray{
+	background-color:lightslategray;
+}
+
+
