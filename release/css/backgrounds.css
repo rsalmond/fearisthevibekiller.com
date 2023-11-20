@@ -255,6 +255,11 @@
 		background-size: cover;
 	}
 
+	.backgroundNYE{
+		background-image:url(../images/backgroundNYE.webp);
+		background-size: cover;
+	}
+
 	.background51{
 		background-image:url(../images/background51.jpg);
 		background-size: cover;
