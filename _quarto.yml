@@ -10,3 +10,4 @@ website:
 format:
   html:
     theme: vapor
+    title-block-categories: false
