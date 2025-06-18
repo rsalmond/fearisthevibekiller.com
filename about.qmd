@@ -1,0 +1,13 @@
+---
+title: "New Internet, Who Dis?"
+image: fitvk.png 
+about:
+  template: jolla
+  links:
+    - icon: instagram
+      text: follow us
+      href: https://www.instagram.com/fearisthevibekiller/
+
+---
+
+We are a bunch of booty shaking dance fiends. We scan the horizon for vibesigns and send our explorers out into the wilderness in search of _getting the fuck down_.
