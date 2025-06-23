@@ -6,7 +6,10 @@ website:
   title: "Fear is the Vibe Killer"
   navbar:
     right:
-      - about.qmd
+      - text: "About"
+        href: about.qmd
+      - text: "Past Events"
+        href: past.qmd
 format:
   html:
     theme: vapor
