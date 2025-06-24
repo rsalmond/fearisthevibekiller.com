@@ -48,7 +48,7 @@ class Event:
 
 def iter_events():
     """walk over ever file in the ./events directory that begins with DD-MM-YYYY"""
-    events_path = os.path.join(os.getcwd(), "events")
+    events_path = os.path.join(os.getcwd(), "_events")
     for file in Path(events_path).iterdir():
         if file.is_file():
             # checx for files which begin with date in MM-DD-YYYY format
@@ -87,13 +87,13 @@ def render_events(target_date: date, event_list: List[Event]) -> str:
     """for a given calendar date, combine the contents of all the event files under an H2 heading for that date"""
     rendered = f"## {target_date.strftime('%A %B %-d, %Y')}\n\n"
     for event in event_list:
-        rendered += event.content
+        rendered += f"{event.content}\n\n"
 
     return rendered
 
 
 def read_tmpl(filename: str) -> str:
-    tmpl_path = os.path.join(os.getcwd(), "templates", filename)
+    tmpl_path = os.path.join(os.getcwd(), "_templates", filename)
     with Path(tmpl_path).open(mode="r") as f:
         return f.read()
 
@@ -126,11 +126,11 @@ def future():
 @cli.command
 def past():
     load_events()
-    past_rendered = get_header("future_events")
-    for k, v in sorted(PAST_EVENTS.items()):
+    past_rendered = get_header("past_events")
+    for k, v in sorted(PAST_EVENTS.items(), reverse=True):
         past_rendered += render_events(k, v)
 
-    past_rendered += get_footer("future_events")
+    past_rendered += get_footer("past_events")
 
     print(past_rendered)
 
