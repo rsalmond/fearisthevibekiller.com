@@ -41,6 +41,7 @@ jobs:
       run: |
         BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
         git checkout -b ${BRANCH_NAME}
+        echo "BRANCH_NAME=${BRANCH_NAME}" >> $GITHUB_ENV
 
     - name: Push branch
       if: steps.count_changes.outputs.diff_count != '4'
