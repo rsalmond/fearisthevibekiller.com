@@ -1,59 +1,59 @@
-name: archive old events
+name: render
 on:
   schedule:
   - cron: '0 7 * * *' # daily at midnight (in whatever timezone github runs)
   workflow_dispatch:
 
-  jobs:
-    render:
-      runs-on: ubuntu-latest
-      steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Setup Git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+    - name: Setup Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
 
-      - name: Install Deps
-        run: |
-          pip install -r requirements.txt
+    - name: Install Deps
+      run: |
+        pip install -r requirements.txt
 
-      - name: Render
-        run: |
-          ./go.sh
+    - name: Render
+      run: |
+        ./go.sh
 
-      - name: Count Changed Lines
-        id: count_changes
-        run: |
-          DIFF_COUNT=$(git diff --numstat | awk '{s+=$1+$2} END {print s}')
-          echo "Total added/removed lines: ${DIFF_COUNT}."
-          echo "diff_count=${DIFF_COUNT}" >> $GITHUB_OUTPUT
+    - name: Count Changed Lines
+      id: count_changes
+      run: |
+        DIFF_COUNT=$(git diff --numstat | awk '{s+=$1+$2} END {print s}')
+        echo "Total added/removed lines: ${DIFF_COUNT}."
+        echo "diff_count=${DIFF_COUNT}" >> $GITHUB_OUTPUT
 
-      - name: Cut PR If Significant Change Occurred
-        if: steps.count_changes.outputs.diff_count != '4' # we should always see at least 4 lines due to the "last updated" lines changing
-        run: |
-          BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
-          git checkout -b ${BRANCH_NAME}
+    - name: Cut PR If Significant Change Occurred
+      if: steps.count_changes.outputs.diff_count != '4' # we should always see at least 4 lines due to the "last updated" lines changing
+      run: |
+        BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
+        git checkout -b ${BRANCH_NAME}
 
-      - name: Push branch
-        if: steps.count_changes.outputs.diff_count != '4'
-        env:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-        run: |
-          git push --set-upstream origin "$BRANCH_NAME"
+    - name: Push branch
+      if: steps.count_changes.outputs.diff_count != '4'
+      env:
+        BRANCH_NAME: ${{ env.BRANCH_NAME }}
+      run: |
+        git push --set-upstream origin "$BRANCH_NAME"
 
-      - name: Open pull request
-        if: steps.count_changes.outputs.diff_count != '4'
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          title: "Automated update – ${{ env.BRANCH_NAME }}"
-          body: "Render produced significant changes."
+    - name: Open pull request
+      if: steps.count_changes.outputs.diff_count != '4'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ env.BRANCH_NAME }}
+        title: "Automated update – ${{ env.BRANCH_NAME }}"
+        body: "Render produced significant changes."
