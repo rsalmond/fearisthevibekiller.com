@@ -56,5 +56,6 @@ jobs:
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: ${{ env.BRANCH_NAME }}
+        base: main
         title: "Automated update – ${{ env.BRANCH_NAME }}"
         body: "Render produced significant changes."
