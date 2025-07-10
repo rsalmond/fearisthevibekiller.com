@@ -34,38 +34,38 @@ jobs:
       run: |
         ./go.sh
 
-      - name: Create branch
-        run: |
-          BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
-          git checkout -b "$BRANCH_NAME"
-          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+    - name: Create branch
+      run: |
+        BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
+        git checkout -b "$BRANCH_NAME"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
-      - name: Commit all changes
-        run: |
-          git add -A
-          git commit -m "Automated render update"
+    - name: Commit all changes
+      run: |
+        git add -A
+        git commit -m "Automated render update"
 
-      - name: Count significant diff lines
-        id: count_changes
-        run: |
-          FILES="docs/index.html docs/past.html"
-          DIFF_LINES=$(git diff HEAD^ --numstat $FILES | awk '{s+=$1+$2} END {print s}')
-          echo "diff_count=$DIFF_LINES" >> $GITHUB_OUTPUT
+    - name: Count significant diff lines
+      id: count_changes
+      run: |
+        FILES="docs/index.html docs/past.html"
+        DIFF_LINES=$(git diff HEAD^ --numstat $FILES | awk '{s+=$1+$2} END {print s}')
+        echo "diff_count=$DIFF_LINES" >> $GITHUB_OUTPUT
 
-      - name: Push branch
-        if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 4
-        env:
-          BRANCH_NAME: ${{ env.BRANCH_NAME }}
-        run: |
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
-          git push --force --set-upstream origin "$BRANCH_NAME"
+    - name: Push branch
+      if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 4
+      env:
+        BRANCH_NAME: ${{ env.BRANCH_NAME }}
+      run: |
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        git push --force --set-upstream origin "$BRANCH_NAME"
 
-      - name: Open pull request
-        if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 4
-        uses: peter-evans/create-pull-request@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ env.BRANCH_NAME }}
-          base: main
-          title: "Automated update – ${{ env.BRANCH_NAME }}"
-          body: "Render produced significant changes."
+    - name: Open pull request
+      if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 4
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ env.BRANCH_NAME }}
+        base: main
+        title: "Automated update – ${{ env.BRANCH_NAME }}"
+        body: "Render produced significant changes."
