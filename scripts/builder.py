@@ -53,7 +53,8 @@ def iter_events():
         if file.is_file():
             # checx for files which begin with date in MM-DD-YYYY format
             if re.match(r"^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}", file.name):
-                yield file
+                if file.name.endswith(".qmd"):
+                    yield file
 
 
 def load_events():
