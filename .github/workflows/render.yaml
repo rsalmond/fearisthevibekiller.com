@@ -47,8 +47,7 @@ jobs:
 
     - name: Commit all changes
       run: |
-        git add -A
-        git commit -m "Automated render update"
+        git commit -am "Automated render update"
 
     - name: Count significant diff lines
       id: count_changes
