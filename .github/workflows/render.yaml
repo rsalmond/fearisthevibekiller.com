@@ -1,8 +1,13 @@
 name: render
+
 on:
   schedule:
   - cron: '0 7 * * *' # daily at midnight (in whatever timezone github runs)
   workflow_dispatch:
+
+env:
+  ACTIONS_RUNNER_DEBUG: true
+
 
 jobs:
   render:
