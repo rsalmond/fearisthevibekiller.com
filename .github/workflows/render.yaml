@@ -52,6 +52,7 @@ jobs:
     - name: Count significant diff lines
       id: count_changes
       run: |
+        git diff HEAD^ -- docs/index.html docs/past.html
         git diff HEAD^ --numstat -- docs/index.html docs/past.html
         DIFF_LINES=$(git diff HEAD^ --numstat -- docs/index.html docs/past.html | awk '{s+=$1+$2} END {print s}')
         echo "diff_count=${DIFF_LINES}"
