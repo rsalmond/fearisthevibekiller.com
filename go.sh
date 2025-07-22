@@ -2,7 +2,7 @@
 
 set -e
 
-python3 scripts/builder.py future > index.qmd
-python3 scripts/builder.py past > past.qmd
+./scripts/builder.py future > index.qmd
+./scripts/builder.py past > past.qmd
 quarto render
 git checkout docs/CNAME

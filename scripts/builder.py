@@ -1,3 +1,12 @@
+#!/usr/bin/env -S uv run --script
+
+# /// script
+# requires-python = ">=3.12"
+# dependencies = [
+#     "click",
+# ]
+# ///
+
 #!/usr/bin/env python3
 
 import os
@@ -138,3 +147,4 @@ def past():
 
 if __name__ == "__main__":
     cli()
+
