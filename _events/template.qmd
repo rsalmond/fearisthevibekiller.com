@@ -6,4 +6,4 @@ Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
 
 * [DJNAME](DJLINK)
 
-["Tickets"|"Info"](URL)
+[Tickets|Info](URL)
