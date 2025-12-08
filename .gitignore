@@ -3,3 +3,5 @@
 *.tgz
 
 /.quarto/
+
+**/*.quarto_ipynb
