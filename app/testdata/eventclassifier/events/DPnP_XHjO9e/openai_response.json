@@ -1,0 +1,36 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "annotations": [],
+        "content": "```json\n{\n  \"event_name\": \"UNDER THE BRIDGE \u00d7 OPEN DECKS KW\",\n  \"date\": \"2025-10-15\",\n  \"start_time\": \"18:00\",\n  \"end_time\": \"21:00\",\n  \"location_name\": \"DM @underthebridge_dance for location\",\n  \"location_address\": \"\",\n  \"google_maps_link\": null,\n  \"djs\": [\n    {\n      \"name\": \"Delfine\",\n      \"link\": \"https://www.instagram.com/djdelfine\"\n    },\n    {\n      \"name\": \"DJ Jess\",\n      \"link\": \"https://www.instagram.com/jess__tunes\"\n    }\n  ],\n  \"ticket_or_info_link\": \"https://www.instagram.com/p/DPnP_XHjO9e/\",\n  \"ticket_link_type\": \"info\",\n  \"confidence\": 0.9\n}\n```",
+        "refusal": null,
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1768367118,
+  "id": "chatcmpl-CxnMEHTe3fKePWlgVyrrHyS8wzvCS",
+  "model": "gpt-4o-mini-2024-07-18",
+  "object": "chat.completion",
+  "service_tier": "default",
+  "system_fingerprint": "fp_8bbc38b4db",
+  "usage": {
+    "completion_tokens": 192,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": 0,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": 0
+    },
+    "prompt_tokens": 26087,
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cached_tokens": 0
+    },
+    "total_tokens": 26279
+  }
+}
