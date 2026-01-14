@@ -80,9 +80,6 @@ def extract_event_metadata_from_post(
         "Extract event info. If a field is missing, return null. "
         "Include every DJ name mentioned in the caption or visible in the images. "
         "Use the post date as context when inferring the event date. "
-        "If the caption indicates the location is only available by DM/PM, "
-        "set location_name to 'DM @<post_author> for location' using the provided post author. "
-        "Otherwise, return null for location_name. "
         "Use the instagram post URL as the fallback info link if no official link is present. "
         "ticket_link_type must be 'tickets' when the link is for tickets, or 'info' otherwise. "
         "Return confidence as a number between 0 and 1, where higher means more certain."
@@ -93,7 +90,6 @@ def extract_event_metadata_from_post(
         "date": "YYYY-MM-DD",
         "start_time": "HH:MM",
         "end_time": "HH:MM",
-        "location_name": "string or null",
         "djs": [{"name": "string", "link": "string"}],
         "ticket_or_info_link": "string",
         "ticket_link_type": "tickets|info",

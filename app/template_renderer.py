@@ -17,13 +17,6 @@ def render_template(template: str, event: Dict) -> str:
     def safe(value: str) -> str:
         return value if value else ""
 
-    def is_dm_only_location(location_name: str) -> bool:
-        """Return True when the location is only available via DM/PM."""
-        if not location_name:
-            return False
-        normalized = location_name.lower()
-        return ("location" in normalized) and ("dm" in normalized or "pm" in normalized)
-
     dj_lines = []
     seen_names = set()
     for dj in event.get("djs") or []:
@@ -54,9 +47,6 @@ def render_template(template: str, event: Dict) -> str:
     rendered = re.sub(r"^[ \\t]*\\* \\[DJ Name\\].*$", dj_block, rendered, flags=re.MULTILINE)
     rendered = rendered.replace("[Tickets or Info](URL)", f"[{ticket_label}]({ticket_link})")
     rendered = rendered.replace("[Tickets|Info](URL)", f"[{ticket_label}]({ticket_link})")
-    location_name = safe(event.get("location_name"))
-    if is_dm_only_location(location_name):
-        rendered = re.sub(r"^Location:.*$", location_name, rendered, flags=re.MULTILINE)
     return rendered
 
 
