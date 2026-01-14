@@ -1,7 +1,9 @@
 .DS_Store
 *.swp
 *.tgz
-
+.env
+instagram_session.json
+datastore
 /.quarto/
-
+app/_events
 **/*.quarto_ipynb
