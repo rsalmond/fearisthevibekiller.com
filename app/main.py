@@ -292,9 +292,6 @@ def extract_event_metadata_for_listings(
             for field in [
                 "event_name",
                 "date",
-                "location_name",
-                "location_address",
-                "google_maps_link",
             ]
             if not event_data.get(field)
         ]
