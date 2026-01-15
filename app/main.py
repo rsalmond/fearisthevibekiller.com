@@ -14,7 +14,13 @@ from datastore import PostKey, PostStore, ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
 from event_listing_classifier import EventListingClassifier
 from instagram_fetcher import FetchConfig, InstagramFetcher, fetch_accounts, load_accounts
-from paths import DEFAULT_ACCOUNTS, DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_SESSION
+from paths import (
+    DEFAULT_ACCOUNTS,
+    DEFAULT_DATASTORE,
+    DEFAULT_EVENTS_DIR,
+    DEFAULT_REJECTED,
+    DEFAULT_SESSION,
+)
 from template_renderer import event_filename, load_template, render_template
 
 
@@ -281,13 +287,33 @@ def parse_event_date(event_data: Dict[str, Any]) -> Optional[date]:
         return None
 
 
+def load_rejected_post_urls(rejected_path: Path) -> set[str]:
+    """Load rejected event post URLs from the denylist file."""
+    if not rejected_path.exists():
+        return set()
+    urls: set[str] = set()
+    try:
+        for line in rejected_path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            urls.add(stripped)
+    except OSError:
+        return set()
+    return urls
+
+
 def render_event_template_if_upcoming(
     event_data: Dict[str, Any],
     template: str,
     events_dir: Path,
     post_url: str,
+    rejected_urls: set[str],
 ) -> bool:
     """Render the event template when the event is today or later."""
+    if post_url and post_url in rejected_urls:
+        LOGGER.info("Skipping render for rejected event %s", post_url)
+        return False
     render_path = expected_render_path(event_data, events_dir)
     if not render_path:
         LOGGER.info("Skipping render for %s due to missing required fields", post_url)
@@ -461,6 +487,7 @@ def extract_event_metadata_for_listings(
 
     template = load_template()
     events_dir.mkdir(parents=True, exist_ok=True)
+    rejected_urls = load_rejected_post_urls(DEFAULT_REJECTED)
 
     profile_cache = ProfileCache(datastore_path)
     for store in iter_post_stores(datastore_path):
@@ -474,7 +501,7 @@ def extract_event_metadata_for_listings(
             event_data = load_event_data(store.event_path)
             if event_data:
                 render_event_template_if_upcoming(
-                    event_data, template, events_dir, post_url
+                    event_data, template, events_dir, post_url, rejected_urls
                 )
                 continue
             LOGGER.warning(
@@ -527,7 +554,9 @@ def extract_event_metadata_for_listings(
             continue
 
         store.save_event(event_data)
-        render_event_template_if_upcoming(event_data, template, events_dir, post_url)
+        render_event_template_if_upcoming(
+            event_data, template, events_dir, post_url, rejected_urls
+        )
 
 
 def run_fetch(args: argparse.Namespace) -> None:
