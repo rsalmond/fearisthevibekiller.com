@@ -1,0 +1,69 @@
+[tasks.build]
+run = [{tasks = [
+  "build_events",
+  "render",
+  "fix_cname"
+]}]
+
+[tasks.fix_cname]
+description = "Quarto render blows away ./docs/cname, we must restore it for github pages to function."
+run = "git checkout ./docs/CNAME"
+
+[tasks.render]
+dir = "./site"
+run = "quarto render"
+
+[tasks.build_events]
+run = """
+./scripts/builder.py future > ./site/index.qmd
+./scripts/builder.py past > ./site/past.qmd
+"""
+
+[tasks.ssh]
+run = "ssh admin@$(tart ip dev)"
+
+[tasks.hack]
+description = "Run dev VM and SSH in"
+run = """
+set -euo pipefail
+
+VM=dev
+USER=admin
+
+# start VM in background
+tart run "$VM" --no-graphics \
+  --dir "app:$(pwd)/app:tag=com.apple.virtio-fs.automount" \
+  --dir "data:$(pwd)/data:ro,tag=com.apple.virtio-fs.automount" &
+
+VM_PID=$!
+
+cleanup() {
+  kill "$VM_PID" >/dev/null 2>&1 || true
+}
+trap cleanup EXIT
+
+# wait for IP
+for _ in {1..60}; do
+  IP="$(tart ip "$VM" 2>/dev/null || true)"
+  [ -n "$IP" ] && break
+  sleep 1
+done
+
+if [ -z "${IP:-}" ]; then
+  echo "VM never got an IP"
+  exit 1
+fi
+
+# wait for sshd
+for _ in {1..60}; do
+  if nc -z "$IP" 22 2>/dev/null; then
+    break
+  fi
+  sleep 1
+done
+
+# exec replaces the shell so ctrl-d exits cleanly
+exec ssh -o StrictHostKeyChecking=no \
+         -o UserKnownHostsFile=/dev/null \
+         "$USER@$IP"
+"""
