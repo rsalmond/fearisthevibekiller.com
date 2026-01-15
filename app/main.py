@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import re
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
@@ -269,6 +270,17 @@ def expected_render_path(event_data: Dict[str, Any], events_dir: Path) -> Option
     return (events_dir / filename) if filename else None
 
 
+def parse_event_date(event_data: Dict[str, Any]) -> Optional[date]:
+    """Parse the event date from extracted metadata."""
+    value = event_data.get("date")
+    if not value:
+        return None
+    try:
+        return datetime.strptime(value, "%Y-%m-%d").date()
+    except ValueError:
+        return None
+
+
 def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str, int]:
     """Return counts for each pipeline stage in the datastore."""
     counts = {
@@ -277,9 +289,11 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
         "clip_event_listings": 0,
         "extracted_success": 0,
         "extracted_fail": 0,
+        "extracted_upcoming": 0,
         "rendered": 0,
     }
 
+    today = date.today()
     for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
             continue
@@ -298,9 +312,12 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
             event_data = load_event_data(store.event_path)
             if not event_data:
                 continue
-            render_path = expected_render_path(event_data, events_dir)
-            if render_path and render_path.exists():
-                counts["rendered"] += 1
+            event_date = parse_event_date(event_data)
+            if event_date and event_date >= today:
+                counts["extracted_upcoming"] += 1
+                render_path = expected_render_path(event_data, events_dir)
+                if render_path and render_path.exists():
+                    counts["rendered"] += 1
     return counts
 
 
@@ -318,6 +335,7 @@ def build_progress_table(counts: Dict[str, int]) -> str:
     clip_event_listings = counts["clip_event_listings"]
     clip_non_events = max(clip_analyzed - clip_event_listings, 0)
     extracted_success = counts["extracted_success"]
+    extracted_upcoming = counts["extracted_upcoming"]
     extracted_fail = counts["extracted_fail"]
     extracted_total = extracted_success + extracted_fail
     rendered = counts["rendered"]
@@ -345,11 +363,12 @@ def build_progress_table(counts: Dict[str, int]) -> str:
         ),
         ("  - success", str(extracted_success), "n/a", ""),
         ("  - fail", str(extracted_fail), "n/a", ""),
+        ("Upcoming extracted", str(extracted_upcoming), "n/a", ""),
         (
             "Rendered",
             str(rendered),
-            format_percentage(rendered, extracted_success),
-            "of extracted success",
+            format_percentage(rendered, extracted_upcoming),
+            "of upcoming extracted",
         ),
     ]
 
@@ -471,10 +490,14 @@ def extract_event_metadata_for_listings(
             continue
 
         store.save_event(event_data)
-        rendered = render_template(template, event_data)
-        filename = event_filename(event_data)
-        (events_dir / filename).write_text(rendered)
-        LOGGER.info("Event extraction succeeded for %s", post_url)
+        event_date = parse_event_date(event_data)
+        if event_date and event_date >= date.today():
+            rendered = render_template(template, event_data)
+            filename = event_filename(event_data)
+            (events_dir / filename).write_text(rendered)
+            LOGGER.info("Event rendered for %s", post_url)
+        else:
+            LOGGER.info("Skipping render for past event %s", post_url)
 
 
 def run_fetch(args: argparse.Namespace) -> None:

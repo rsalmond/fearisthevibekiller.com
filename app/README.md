@@ -58,5 +58,7 @@ Session notes
 
 # useful commands
 
-nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
-nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
+sudo nerdctl build -t instagram-event-pipeline /app/app
+
+sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
+sudo nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
