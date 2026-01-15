@@ -396,7 +396,7 @@ def extract_event_metadata_for_listings(
                 )
         if result.error:
             store.mark_event_failed(result.error)
-            print(f"Event extraction failed for {post_url}: {result.error}")
+            LOGGER.info("Event extraction failed for %s: %s", post_url, result.error)
             continue
 
         event_data = result.data or {}
@@ -416,13 +416,14 @@ def extract_event_metadata_for_listings(
         if missing:
             reason = f"Missing required fields: {', '.join(missing)}"
             store.mark_event_failed(reason)
-            print(f"Event extraction incomplete for {post_url}: {reason}")
+            LOGGER.info("Event extraction incomplete for %s: %s", post_url, reason)
             continue
 
         store.save_event(event_data)
         rendered = render_template(template, event_data)
         filename = event_filename(event_data)
         (events_dir / filename).write_text(rendered)
+        LOGGER.info("Event extraction succeeded for %s", post_url)
 
 
 def run_fetch(args: argparse.Namespace) -> None:
