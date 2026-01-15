@@ -22,6 +22,8 @@ Usage
   python /app/main.py classify-events
 - Extract event metadata:
   python /app/main.py extract-events
+- Progress report:
+  python /app/main.py progress
 - Full pipeline:
   python /app/main.py --accounts /data/accounts.txt run
 - Render a single event from testdata:
@@ -29,32 +31,14 @@ Usage
   python /app/render_single_event.py /app/testdata/eventclassifier/events/<POST_ID> --no-cache
 
 CLI Arguments
-- main.py
-  - --datastore: Datastore root for downloaded posts and analysis results.
-  - --limit: Maximum number of recent posts to fetch per account.
-  - --session-file: Path to the Instagram session file.
-  - --events-dir: Output directory for rendered event templates.
-  - --model: OpenAI model for event metadata extraction.
-  - --accounts: Path to a file of account URLs or a comma-separated list (required for fetch/run).
-  - fetch: Fetch new posts.
-  - classify-events: Classify posts as event listings.
-  - extract-events: Extract event metadata and render templates.
-  - run: Fetch, classify, and extract in one pass.
-- render_single_event.py
-  - post_dir: Path to a labeled event post directory.
-  - --session-file: Instagram session file for DJ link lookups.
-  - --output-dir: Directory for rendered templates.
-  - --model: OpenAI model for event extraction when needed.
-  - --no-cache: Ignore cached event data and re-run OpenAI extraction.
-- label_event_posts.py
-  - --datastore: Datastore root containing post metadata and media.
-  - --limit: Stop after labeling/listing this many posts (0 means no limit).
-  - --testdata-root: Root directory where labeled test data is stored.
-  - --prioritize-events: Use the classifier to surface likely event listings first.
-  - --match-qmd-events: Only show posts whose captions match QMD event text.
-  - --events-dir: Directory containing QMD files with known events.
-  - --list-classifications: List posts with captions, media paths, and classifier results.
-  - --include-testdata: Include posts already stored in the labeled testdata directories.
+- main.py: Run the pipeline stages and report progress.
+  - Subcommands: fetch, classify-events, extract-events, progress, run.
+  - Flags: --datastore, --limit, --session-file, --events-dir, --model, --accounts (fetch/run).
+- render_single_event.py: Render a template for a single labeled event post.
+  - Arguments: post_dir.
+  - Flags: --session-file, --output-dir, --model, --no-cache.
+- label_event_posts.py: Label or list posts for classifier training.
+  - Flags: --datastore, --limit, --testdata-root, --prioritize-events, --match-qmd-events, --events-dir, --list-classifications, --include-testdata.
 
 Notes
 - `classify-events` and `extract-events` operate only on the datastore and do not need `--accounts`.
@@ -67,3 +51,9 @@ Session notes
 - The Instagram session file defaults to `/app/instagram_session.json` (or `--session-file`).
 - To create a new session, remove the old session file and run:
   `python /app/main.py --accounts /data/accounts.txt fetch`
+
+
+# useful commands
+
+nerdctl run --rm --env-file /app/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/main.py progress
+nerdctl run --rm --env-file /app/.env -e LOG_LEVEL=INFO -v /app:/app -v /data:/data:ro --entrypoint python instagram-event-pipeline /app/main.py extract-events

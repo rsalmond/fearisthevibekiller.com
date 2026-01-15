@@ -1,9 +1,10 @@
 import argparse
+import json
 import logging
 import os
 import re
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired
@@ -208,12 +209,131 @@ def choose_ticket_link(post_url: str, extracted_link: Optional[str]) -> Dict[str
     }
 
 
+def iter_post_stores(datastore_path: Path) -> Sequence[PostStore]:
+    """Return PostStore instances for each post directory in the datastore."""
+    stores: List[PostStore] = []
+    for post_dir in datastore_path.glob("*/*"):
+        if not post_dir.is_dir():
+            continue
+        key = PostKey(username=post_dir.parent.name, shortcode=post_dir.name)
+        stores.append(PostStore(datastore_path, key))
+    return stores
+
+
+def load_event_data(event_path: Path) -> Optional[Dict[str, Any]]:
+    """Load event.json data if it can be decoded."""
+    if not event_path.exists():
+        return None
+    try:
+        with event_path.open("r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
+def expected_render_path(event_data: Dict[str, Any], events_dir: Path) -> Optional[Path]:
+    """Return the expected rendered path when required fields exist."""
+    if not event_data.get("event_name") or not event_data.get("date"):
+        return None
+    filename = event_filename(event_data)
+    return (events_dir / filename) if filename else None
+
+
+def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str, int]:
+    """Return counts for each pipeline stage in the datastore."""
+    counts = {
+        "downloaded": 0,
+        "clip_analyzed": 0,
+        "extracted_success": 0,
+        "extracted_fail": 0,
+        "rendered": 0,
+    }
+
+    for store in iter_post_stores(datastore_path):
+        if not store.metadata_path.exists():
+            continue
+        counts["downloaded"] += 1
+        if store.analysis_path.exists():
+            counts["clip_analyzed"] += 1
+        if store.event_path.exists():
+            counts["extracted_success"] += 1
+        if store.event_error_path.exists():
+            counts["extracted_fail"] += 1
+
+        if store.event_path.exists():
+            event_data = load_event_data(store.event_path)
+            if not event_data:
+                continue
+            render_path = expected_render_path(event_data, events_dir)
+            if render_path and render_path.exists():
+                counts["rendered"] += 1
+    return counts
+
+
+def format_percentage(numerator: int, denominator: int) -> str:
+    """Return a percentage string or 'n/a' when the denominator is zero."""
+    if denominator <= 0:
+        return "n/a"
+    return f"{(numerator / denominator) * 100:.1f}%"
+
+
+def build_progress_table(counts: Dict[str, int]) -> str:
+    """Build a plain-text table of progress metrics."""
+    downloaded = counts["downloaded"]
+    clip_analyzed = counts["clip_analyzed"]
+    extracted_success = counts["extracted_success"]
+    extracted_fail = counts["extracted_fail"]
+    extracted_total = extracted_success + extracted_fail
+    rendered = counts["rendered"]
+
+    rows: List[Tuple[str, str, str]] = [
+        ("Downloaded posts", str(downloaded), "100.0%" if downloaded else "n/a"),
+        (
+            "CLIP analyzed",
+            str(clip_analyzed),
+            format_percentage(clip_analyzed, downloaded),
+        ),
+        (
+            "Extracted total",
+            str(extracted_total),
+            format_percentage(extracted_total, clip_analyzed),
+        ),
+        ("Extracted success", str(extracted_success), "n/a"),
+        ("Extracted fail", str(extracted_fail), "n/a"),
+        (
+            "Rendered",
+            str(rendered),
+            format_percentage(rendered, extracted_total),
+        ),
+    ]
+
+    headers = ("Metric", "Count", "Percent")
+    widths = [
+        max(len(headers[0]), max(len(row[0]) for row in rows)),
+        max(len(headers[1]), max(len(row[1]) for row in rows)),
+        max(len(headers[2]), max(len(row[2]) for row in rows)),
+    ]
+
+    def format_row(values: Tuple[str, str, str]) -> str:
+        return (
+            f"| {values[0].ljust(widths[0])} "
+            f"| {values[1].rjust(widths[1])} "
+            f"| {values[2].rjust(widths[2])} |"
+        )
+
+    border = (
+        f"+-{'-' * widths[0]}-+-{'-' * widths[1]}-+-{'-' * widths[2]}-+"
+    )
+    lines = [border, format_row(headers), border]
+    lines.extend(format_row(row) for row in rows)
+    lines.append(border)
+    return "\n".join(lines)
+
+
 def classify_event_listings(datastore_path: Path) -> None:
     """Classify posts in the datastore as event listings."""
     classifier = EventListingClassifier()
-    for post_dir in datastore_path.glob("*/*"):
-        key = PostKey(username=post_dir.parent.name, shortcode=post_dir.name)
-        store = PostStore(datastore_path, key)
+    for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
             continue
         if store.analysis_path.exists():
@@ -248,9 +368,7 @@ def extract_event_metadata_for_listings(
     template = load_template()
     events_dir.mkdir(parents=True, exist_ok=True)
 
-    for post_dir in datastore_path.glob("*/*"):
-        key = PostKey(username=post_dir.parent.name, shortcode=post_dir.name)
-        store = PostStore(datastore_path, key)
+    for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
             continue
         if store.event_already_processed():
@@ -339,6 +457,14 @@ def run_extract_event_metadata(args: argparse.Namespace) -> None:
     )
 
 
+def run_progress_report(args: argparse.Namespace) -> None:
+    """Print pipeline progress metrics for the datastore."""
+    datastore_path = datastore_root(args.datastore)
+    events_dir = Path(args.events_dir).expanduser().resolve()
+    counts = collect_progress_counts(datastore_path, events_dir)
+    print(build_progress_table(counts))
+
+
 def run_all(args: argparse.Namespace) -> None:
     """Fetch, classify event listings, and extract event metadata."""
     run_fetch(args)
@@ -352,6 +478,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command")
 
     def add_common_args(target: argparse.ArgumentParser) -> None:
+        """Add datastore and workflow flags shared by core commands."""
         target.add_argument(
             "--datastore",
             default="/app/datastore",
@@ -379,6 +506,19 @@ def build_parser() -> argparse.ArgumentParser:
             help="OpenAI model for event metadata extraction.",
         )
 
+    def add_progress_args(target: argparse.ArgumentParser) -> None:
+        """Add arguments needed for the progress report."""
+        target.add_argument(
+            "--datastore",
+            default="/app/datastore",
+            help="Datastore root for downloaded posts and analysis results.",
+        )
+        target.add_argument(
+            "--events-dir",
+            default="/app/_events",
+            help="Output directory for rendered event templates.",
+        )
+
     fetch_parser = subparsers.add_parser("fetch", help="Fetch new posts")
     add_common_args(fetch_parser)
     fetch_parser.add_argument(
@@ -396,6 +536,11 @@ def build_parser() -> argparse.ArgumentParser:
         "extract-events", help="Extract event metadata and render templates"
     )
     add_common_args(extract_parser)
+
+    progress_parser = subparsers.add_parser(
+        "progress", help="Report datastore processing progress"
+    )
+    add_progress_args(progress_parser)
 
     run_parser = subparsers.add_parser(
         "run", help="Fetch posts, classify event listings, extract event metadata"
@@ -428,6 +573,8 @@ def main() -> None:
         run_classify_event_listings(args)
     elif args.command == "extract-events":
         run_extract_event_metadata(args)
+    elif args.command == "progress":
+        run_progress_report(args)
     elif args.command == "run":
         run_all(args)
     else:
