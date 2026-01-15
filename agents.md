@@ -48,16 +48,4 @@ at all times prefer an efficient build for the Dockerfile
 never rebuild the image while iterating unless you need a new dep or requirement, just mount the source code as a volume and run
 
 
-# Useful Commands
-
-## run tests
-
-sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline -m unittest /app/app/tests/
-
-## show progress
-
-sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
-
-## run extraction
-
-nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
+Use the mise tasks under /app/mise.toml for common app workflows.

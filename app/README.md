@@ -43,7 +43,7 @@ CLI Arguments
 
 Notes
 - `classify-events` and `extract-events` operate only on the datastore and do not need `--accounts`.
-- Datastore default: /app/app/datastore
+- Datastore default: /datastore
 - Events output: /app/data/_events
 - Template: /app/data/template.qmd
 - Session file: /secure/instagram_session.json
@@ -58,28 +58,11 @@ Session notes
   `python /app/app/main.py --accounts /app/data/accounts.txt fetch`
 
 
-# useful commands
-
-### Rebuild the image
-
-```console
-sudo nerdctl build -t instagram-event-pipeline /app/app
-```
-
-### Run the tests
-
-```console
-sudo nerdctl run --rm --env-file /secure/.env -e PYTHONPATH=/app/app -v /app:/app --entrypoint python instagram-event-pipeline -m unittest discover -s /app/app/tests
-```
-
-### Run the progress report
-
-```console
-sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
-```
-
-### Run the event extract process
-
-```console
-sudo nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
-```
+Mise tasks
+- app:build builds the application image.
+- app:test runs unit tests.
+- app:progress reports pipeline progress.
+- app:fetch fetches new posts.
+- app:classify classifies event listings.
+- app:extract extracts metadata and renders templates.
+- app:run runs the full pipeline sequence.
