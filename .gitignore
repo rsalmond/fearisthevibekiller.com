@@ -4,7 +4,7 @@
 .env
 instagram_session.json
 datastore
-/.quarto/
-app/_events
+site/.quarto/
+site/_docs/
 **/*.quarto_ipynb
 __pycache__
