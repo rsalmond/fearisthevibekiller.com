@@ -7,3 +7,4 @@ datastore
 /.quarto/
 app/_events
 **/*.quarto_ipynb
+__pycache__
