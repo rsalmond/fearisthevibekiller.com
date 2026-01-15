@@ -109,15 +109,7 @@ def fetch_profile_links(client: Client, username: str) -> List[str]:
                 links.append(url)
         return links
     except Exception:
-        pass
-
-    user = client.user_info_by_username(username)
-    if user.external_url:
-        links.append(user.external_url)
-    for link in user.bio_links or []:
-        if link.url:
-            links.append(link.url)
-    return links
+        return links
 
 
 def find_handle_for_name(
@@ -133,10 +125,11 @@ def find_handle_for_name(
         if normalized and normalized in handle.replace(".", ""):
             return handle
         try:
-            user = client.user_info_by_username(handle)
+            data = client.private_request(f"users/{handle}/usernameinfo/")
         except Exception:
             continue
-        full_name = (user.full_name or "").lower()
+        user = data.get("user") or {}
+        full_name = (user.get("full_name") or "").lower()
         if cleaned.lower() in full_name:
             return handle
 
