@@ -1,9 +1,0 @@
-### 👉 <EVENT NAME>
-
-Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
-
-#### STARTTIME-ENDTIME
-
-* [DJNAME](DJLINK)
-
-[Tickets|Info](URL)
