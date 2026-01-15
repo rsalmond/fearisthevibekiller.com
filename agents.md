@@ -1,6 +1,10 @@
 # Overall
 
-Everything happens inside a container. This project is intended to produce complete, container images which can be run anywhere.
+Everything we develop must run inside a container. This project is intended to produce complete, container images which can be run anywhere.
+
+# Environment
+
+We are in a VM and you have sudo access. Install whatever you need to get the job done.
 
 # Python
 
