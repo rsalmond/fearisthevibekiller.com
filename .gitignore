@@ -1,8 +1,7 @@
 .DS_Store
 *.swp
 *.tgz
-.env
-instagram_session.json
+secure/*
 datastore
 site/.quarto/
 site/_docs/
