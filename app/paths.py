@@ -21,3 +21,4 @@ DEFAULT_TEMPLATE = DATA_ROOT / "template.qmd"
 DEFAULT_SESSION = Path("/secure/instagram_session.json")
 DEFAULT_ENV = Path("/secure/.env")
 DEFAULT_TESTDATA = APP_ROOT / "testdata" / "eventclassifier"
+DEFAULT_REJECTED = DATA_ROOT / "rejected_events.txt"

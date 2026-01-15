@@ -48,7 +48,9 @@ Notes
 - Template: /app/data/template.qmd
 - Session file: /secure/instagram_session.json
 - Environment: /secure/.env
+- Rejected events denylist: /app/data/rejected_events.txt (one post URL per line; lines starting with `#` are ignored)
 - ffmpeg must be available on PATH for video frame extraction
+- Rejection workflow expects PR bodies to include a `Post URL: https://...` line.
 
 Session notes
 - The Instagram session file defaults to `/secure/instagram_session.json` (or `--session-file`).
