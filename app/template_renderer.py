@@ -2,14 +2,14 @@ import re
 from pathlib import Path
 from typing import Dict
 
+from paths import DATA_ROOT, DEFAULT_TEMPLATE
+
 
 def load_template() -> str:
-    """Load the event template from /data."""
-    candidates = [Path("/data/template.txt"), Path("/data/template.qmd")]
-    for path in candidates:
-        if path.exists():
-            return path.read_text()
-    raise FileNotFoundError("No template found in /data/template.txt or /data/template.qmd")
+    """Load the event template from the repo data directory."""
+    if DEFAULT_TEMPLATE.exists():
+        return DEFAULT_TEMPLATE.read_text()
+    raise FileNotFoundError(f"No template found at {DEFAULT_TEMPLATE}")
 
 
 def render_template(template: str, event: Dict) -> str:

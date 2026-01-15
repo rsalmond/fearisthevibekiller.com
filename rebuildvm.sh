@@ -8,8 +8,6 @@ USER="admin"
 APP_DIR="$(pwd)/app"
 SECURE_DIR="$(cd ../fitvk.secure && pwd)"
 
-echo "XXX $SECURE_DIR"
-
 echo "==> Rebuilding VM: $VM_NAME"
 
 # 1. destroy if exists

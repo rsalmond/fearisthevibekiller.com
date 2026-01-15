@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
@@ -61,9 +62,10 @@ class InstagramFetcher:
         if self.client is not None:
             return self.client
 
+        sessionid = self._get_env("INSTAGRAM_SESSIONID")
         username = self._get_env("INSTAGRAM_USERNAME", "USERNAME")
         password = self._get_env("INSTAGRAM_PASSWORD", "PASSWORD")
-        if not username or not password:
+        if not sessionid and (not username or not password):
             raise RuntimeError("Missing Instagram credentials in env vars.")
 
         client = Client()
@@ -91,6 +93,27 @@ class InstagramFetcher:
             except Exception:
                 client.set_settings({})
                 LOGGER.info("Instagram session validation failed; reauthenticating %s", username)
+
+        if sessionid:
+            try:
+                normalized = sessionid.strip().strip("\"'").strip()
+                match = re.search(r"sessionid=([^;\\s]+)", normalized)
+                if match:
+                    normalized = match.group(1)
+                else:
+                    normalized = normalized.split(";", 1)[0]
+                client.login_by_sessionid(normalized)
+                client.account_info()
+                try:
+                    self.config.session_file.parent.mkdir(parents=True, exist_ok=True)
+                    client.dump_settings(self.config.session_file.as_posix())
+                except OSError as exc:
+                    LOGGER.info("Unable to write session file: %s", exc)
+                self.client = client
+                LOGGER.debug("Instagram sessionid login succeeded.")
+                return client
+            except Exception as exc:
+                LOGGER.info("Instagram sessionid login failed: %s", exc)
 
         if client.login(username, password):
             client.dump_settings(self.config.session_file.as_posix())

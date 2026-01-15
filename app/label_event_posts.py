@@ -7,6 +7,7 @@ from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from datastore import PostKey, PostStore, datastore_root
 from event_listing_classifier import EventListingClassifier
+from paths import DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_TESTDATA
 
 
 def iter_posts(datastore_path: Path) -> Iterable[Tuple[PostStore, Path]]:
@@ -234,7 +235,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--datastore",
-        default="/app/datastore",
+        default=DEFAULT_DATASTORE.as_posix(),
         help="Datastore root containing post metadata and media.",
     )
     parser.add_argument(
@@ -245,7 +246,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--testdata-root",
-        default="/app/testdata/eventclassifier",
+        default=DEFAULT_TESTDATA.as_posix(),
         help="Root directory where labeled test data is stored.",
     )
     parser.add_argument(
@@ -260,7 +261,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--events-dir",
-        default="/data/_events",
+        default=DEFAULT_EVENTS_DIR.as_posix(),
         help="Directory containing QMD files with known events.",
     )
     parser.add_argument(

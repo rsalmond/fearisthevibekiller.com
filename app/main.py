@@ -11,8 +11,9 @@ from instagrapi.exceptions import LoginRequired
 
 from datastore import PostKey, PostStore, ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
-from instagram_fetcher import FetchConfig, InstagramFetcher, fetch_accounts, load_accounts
 from event_listing_classifier import EventListingClassifier
+from instagram_fetcher import FetchConfig, InstagramFetcher, fetch_accounts, load_accounts
+from paths import DEFAULT_ACCOUNTS, DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_SESSION
 from template_renderer import event_filename, load_template, render_template
 
 
@@ -532,7 +533,7 @@ def build_parser() -> argparse.ArgumentParser:
         """Add datastore and workflow flags shared by core commands."""
         target.add_argument(
             "--datastore",
-            default="/app/datastore",
+            default=DEFAULT_DATASTORE.as_posix(),
             help="Datastore root for downloaded posts and analysis results.",
         )
         target.add_argument(
@@ -543,12 +544,12 @@ def build_parser() -> argparse.ArgumentParser:
         )
         target.add_argument(
             "--session-file",
-            default="/app/instagram_session.json",
+            default=DEFAULT_SESSION.as_posix(),
             help="Path to the Instagram session file.",
         )
         target.add_argument(
             "--events-dir",
-            default="/app/_events",
+            default=DEFAULT_EVENTS_DIR.as_posix(),
             help="Output directory for rendered event templates.",
         )
         target.add_argument(
@@ -561,12 +562,12 @@ def build_parser() -> argparse.ArgumentParser:
         """Add arguments needed for the progress report."""
         target.add_argument(
             "--datastore",
-            default="/app/datastore",
+            default=DEFAULT_DATASTORE.as_posix(),
             help="Datastore root for downloaded posts and analysis results.",
         )
         target.add_argument(
             "--events-dir",
-            default="/app/_events",
+            default=DEFAULT_EVENTS_DIR.as_posix(),
             help="Output directory for rendered event templates.",
         )
 
@@ -575,6 +576,7 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument(
         "--accounts",
         required=True,
+        default=DEFAULT_ACCOUNTS.as_posix(),
         help="Path to a file of account URLs or a comma-separated list.",
     )
 
@@ -600,6 +602,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser.add_argument(
         "--accounts",
         required=True,
+        default=DEFAULT_ACCOUNTS.as_posix(),
         help="Path to a file of account URLs or a comma-separated list.",
     )
 
