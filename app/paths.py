@@ -14,7 +14,7 @@ REPO_ROOT = _find_repo_root()
 APP_ROOT = REPO_ROOT / "app" if (REPO_ROOT / "app").exists() else REPO_ROOT
 DATA_ROOT = REPO_ROOT / "data"
 
-DEFAULT_DATASTORE = APP_ROOT / "datastore"
+DEFAULT_DATASTORE = Path("/datastore")
 DEFAULT_EVENTS_DIR = DATA_ROOT / "_events"
 DEFAULT_ACCOUNTS = DATA_ROOT / "accounts.txt"
 DEFAULT_TEMPLATE = DATA_ROOT / "template.qmd"
