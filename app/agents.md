@@ -1,3 +1,7 @@
+# Overall
+
+Everything happens inside a container. This project is intended to produce complete, container images which can be run anywhere.
+
 # Python
 
 at all times prefer clarity and readability over everything else
@@ -44,12 +48,12 @@ never rebuild the image while iterating unless you need a new dep or requirement
 
 ## run tests
 
-sudo nerdctl run --rm --env-file /app/.env -v /app:/app --entrypoint python instagram-event-pipeline -m unittest /app/tests/
+sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline -m unittest /app/app/tests/
 
 ## show progress
 
-sudo nerdctl run --rm --env-file /app/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/main.py progress
+sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
 
 ## run extraction
 
-nerdctl run --rm --env-file /app/.env -e LOG_LEVEL=INFO -v /app:/app -v /data:/data:ro --entrypoint python instagram-event-pipeline /app/main.py extract-events
+nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events

@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Iterable, List, Tuple
 
 from event_listing_classifier import EventListingClassifier
+from paths import DEFAULT_TESTDATA
 
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
@@ -42,7 +43,7 @@ class TestEventListingClassifier(unittest.TestCase):
 
     def test_events_are_classified_as_events(self) -> None:
         """Assert that labeled event posts are classified as events."""
-        events_root = Path("/app/testdata/eventclassifier/events")
+        events_root = DEFAULT_TESTDATA / "events"
         failures = []
         total = 0
         for post_dir, caption, images in iter_labeled_posts(events_root):
@@ -58,7 +59,7 @@ class TestEventListingClassifier(unittest.TestCase):
 
     def test_nonevents_are_classified_as_nonevents(self) -> None:
         """Report nonevent misclassifications without failing the test."""
-        nonevents_root = Path("/app/testdata/eventclassifier/nonevents")
+        nonevents_root = DEFAULT_TESTDATA / "nonevents"
         failures = []
         total = 0
         for post_dir, caption, images in iter_labeled_posts(nonevents_root):

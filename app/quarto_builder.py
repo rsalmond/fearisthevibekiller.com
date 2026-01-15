@@ -19,6 +19,8 @@ from datetime import date
 from typing import List
 from dataclasses import dataclass
 
+from paths import DATA_ROOT
+
 PAST_EVENTS = {}
 FUTURE_EVENTS = {}
 
@@ -57,8 +59,8 @@ class Event:
 
 def iter_events():
     """walk over ever file in the _events directory that begins with DD-MM-YYYY"""
-    events_path = os.path.join(os.getcwd(), "./data/_events")
-    for file in Path(events_path).iterdir():
+    events_path = DATA_ROOT / "_events"
+    for file in events_path.iterdir():
         if file.is_file():
             # checx for files which begin with date in MM-DD-YYYY format
             if re.match(r"^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}", file.name):
@@ -147,4 +149,3 @@ def past():
 
 if __name__ == "__main__":
     cli()
-

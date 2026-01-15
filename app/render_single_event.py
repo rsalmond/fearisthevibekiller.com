@@ -2,6 +2,7 @@ import argparse
 import json
 import logging
 import os
+import re
 from pathlib import Path
 from typing import Dict, List
 
@@ -11,14 +12,16 @@ from instagrapi.exceptions import LoginRequired
 from datastore import ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
 from main import choose_ticket_link, enrich_dj_links
+from paths import DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_SESSION
 from template_renderer import event_filename, load_template, render_template
 
 
 def load_instagram_client(session_file: Path) -> Client:
     """Log into Instagram for profile lookups."""
+    sessionid = os.environ.get("INSTAGRAM_SESSIONID")
     username = os.environ.get("INSTAGRAM_USERNAME") or os.environ.get("USERNAME")
     password = os.environ.get("INSTAGRAM_PASSWORD") or os.environ.get("PASSWORD")
-    if not username or not password:
+    if not sessionid and (not username or not password):
         raise RuntimeError("Missing Instagram credentials for DJ lookup.")
 
     client = Client()
@@ -38,6 +41,25 @@ def load_instagram_client(session_file: Path) -> Client:
             client.set_settings({})
             if old_uuids:
                 client.set_uuids(old_uuids)
+        except Exception:
+            client.set_settings({})
+
+    if sessionid:
+        try:
+            normalized = sessionid.strip().strip("\"'").strip()
+            match = re.search(r"sessionid=([^;\\s]+)", normalized)
+            if match:
+                normalized = match.group(1)
+            else:
+                normalized = normalized.split(";", 1)[0]
+            client.login_by_sessionid(normalized)
+            client.account_info()
+            try:
+                session_file.parent.mkdir(parents=True, exist_ok=True)
+                client.dump_settings(session_file.as_posix())
+            except OSError:
+                pass
+            return client
         except Exception:
             client.set_settings({})
 
@@ -91,12 +113,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("post_dir", help="Path to a labeled event post directory.")
     parser.add_argument(
         "--session-file",
-        default="/app/instagram_session.json",
+        default=DEFAULT_SESSION.as_posix(),
         help="Instagram session file for DJ link lookups.",
     )
     parser.add_argument(
         "--output-dir",
-        default="/app/_events",
+        default=DEFAULT_EVENTS_DIR.as_posix(),
         help="Directory for rendered templates.",
     )
     parser.add_argument(
@@ -147,7 +169,7 @@ def main() -> None:
 
     djs = event_data.get("djs") or []
     if isinstance(djs, list):
-        cache = ProfileCache(datastore_root("/app/datastore"))
+        cache = ProfileCache(datastore_root(DEFAULT_DATASTORE.as_posix()))
         event_data["djs"] = enrich_dj_links(
             djs, caption, Path(args.session_file), cache
         )

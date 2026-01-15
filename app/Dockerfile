@@ -16,4 +16,4 @@ COPY . /app
 
 RUN echo "alias ll='ls -alF'" >> /etc/bash.bashrc
 
-ENTRYPOINT ["python", "/app/main.py", "run", "--accounts", "/data/accounts.txt"]
+ENTRYPOINT ["python", "/app/app/main.py", "run", "--accounts", "/app/data/accounts.txt"]

@@ -7,9 +7,10 @@ Overview
 - Extract event details with OpenAI and render QMD files.
 
 Setup
-- Install dependencies: pip install -r /app/requirements.txt
+- Install dependencies: pip install -r /app/app/requirements.txt
 - Set environment variables:
   - INSTAGRAM_USERNAME / INSTAGRAM_PASSWORD (or USERNAME / PASSWORD)
+  - INSTAGRAM_SESSIONID (preferred if username/password login fails; can be raw value or full cookie string)
   - OPENAI_API_KEY (only for second pass)
   - INSTAGRAM_FETCH_VERBOSE=1 to log per-account fetch errors
   - EVENT_LISTING_THRESHOLD=0.30 to set the event classifier threshold (lower is more sensitive)
@@ -17,18 +18,18 @@ Setup
 
 Usage
 - Fetch posts:
-  python /app/main.py --accounts /data/accounts.txt fetch
+  python /app/app/main.py --accounts /app/data/accounts.txt fetch
 - Classify event listings:
-  python /app/main.py classify-events
+  python /app/app/main.py classify-events
 - Extract event metadata:
-  python /app/main.py extract-events
+  python /app/app/main.py extract-events
 - Progress report:
-  python /app/main.py progress
+  python /app/app/main.py progress
 - Full pipeline:
-  python /app/main.py --accounts /data/accounts.txt run
+  python /app/app/main.py --accounts /app/data/accounts.txt run
 - Render a single event from testdata:
-  python /app/render_single_event.py /app/testdata/eventclassifier/events/<POST_ID>
-  python /app/render_single_event.py /app/testdata/eventclassifier/events/<POST_ID> --no-cache
+  python /app/app/render_single_event.py /app/app/testdata/eventclassifier/events/<POST_ID>
+  python /app/app/render_single_event.py /app/app/testdata/eventclassifier/events/<POST_ID> --no-cache
 
 CLI Arguments
 - main.py: Run the pipeline stages and report progress.
@@ -42,18 +43,20 @@ CLI Arguments
 
 Notes
 - `classify-events` and `extract-events` operate only on the datastore and do not need `--accounts`.
-- Datastore default: /app/datastore
-- Events output: /app/_events
-- Template: /data/template.txt or /data/template.qmd
+- Datastore default: /app/app/datastore
+- Events output: /app/data/_events
+- Template: /app/data/template.qmd
+- Session file: /secure/instagram_session.json
+- Environment: /secure/.env
 - ffmpeg must be available on PATH for video frame extraction
 
 Session notes
-- The Instagram session file defaults to `/app/instagram_session.json` (or `--session-file`).
+- The Instagram session file defaults to `/secure/instagram_session.json` (or `--session-file`).
 - To create a new session, remove the old session file and run:
-  `python /app/main.py --accounts /data/accounts.txt fetch`
+  `python /app/app/main.py --accounts /app/data/accounts.txt fetch`
 
 
 # useful commands
 
-nerdctl run --rm --env-file /app/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/main.py progress
-nerdctl run --rm --env-file /app/.env -e LOG_LEVEL=INFO -v /app:/app -v /data:/data:ro --entrypoint python instagram-event-pipeline /app/main.py extract-events
+nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
+nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
