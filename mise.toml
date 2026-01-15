@@ -45,8 +45,8 @@ USER=admin
 
 # start VM in background
 tart run "$VM" --no-graphics \
-  --dir "app:$(pwd)/app:tag=com.apple.virtio-fs.automount" \
-  --dir "data:$(pwd)/data:ro,tag=com.apple.virtio-fs.automount" &
+  --dir "app:$(pwd):tag=com.apple.virtio-fs.automount" \
+  --dir "secure:../fitvk.secure:tag=com.apple.virtio-fs.automount" &
 
 VM_PID=$!
 

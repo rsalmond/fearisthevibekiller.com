@@ -6,7 +6,9 @@ BASE_IMAGE="debian"
 USER="admin"
 
 APP_DIR="$(pwd)/app"
-DATA_DIR="$(pwd)/data"
+SECURE_DIR="$(cd ../fitvk.secure && pwd)"
+
+echo "XXX $SECURE_DIR"
 
 echo "==> Rebuilding VM: $VM_NAME"
 
@@ -26,7 +28,7 @@ echo "==> Booting VM"
 tart run "$VM_NAME" \
   --no-graphics \
   --dir "app:$APP_DIR:tag=com.apple.virtio-fs.automount" \
-  --dir "data:$DATA_DIR:ro,tag=com.apple.virtio-fs.automount" &
+  --dir "secure:$SECURE_DIR:tag=com.apple.virtio-fs.automount" &
 
 VM_PID=$!
 
@@ -74,7 +76,7 @@ set -euo pipefail
 
 # packages
 sudo apt-get update
-sudo apt-get install -y vim iptables iproute2 containerd runc
+sudo apt-get install -y vim iptables iproute2 containerd runc git
 
 # codex
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
@@ -109,8 +111,10 @@ ROOT="/mnt/shared"
 mkdir -p "$ROOT"
 mountpoint -q "$ROOT" || mount -t virtiofs "$TAG" "$ROOT" || exit 0
 
+
+mkdir -p /app /secure
 mountpoint -q /app  || mount --bind "$ROOT/app" /app
-mountpoint -q /data || { mount --bind "$ROOT/data" /data && mount -o remount,ro,bind /data; }
+mountpoint -q /secure  || mount --bind "$ROOT/secure" /secure
 
 SCRIPT
 
