@@ -58,7 +58,20 @@ Session notes
 
 # useful commands
 
-sudo nerdctl build -t instagram-event-pipeline /app/app
+### Rebuild the image
 
+```console
+sudo nerdctl build -t instagram-event-pipeline /app/app
+```
+
+### Run the progress report
+
+```console
 sudo nerdctl run --rm --env-file /secure/.env -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py progress
+```
+
+### Run the event extract process
+
+```console
 sudo nerdctl run --rm --env-file /secure/.env -e LOG_LEVEL=INFO -v /app:/app --entrypoint python instagram-event-pipeline /app/app/main.py extract-events
+```
