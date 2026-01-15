@@ -281,6 +281,33 @@ def parse_event_date(event_data: Dict[str, Any]) -> Optional[date]:
         return None
 
 
+def render_event_template_if_upcoming(
+    event_data: Dict[str, Any],
+    template: str,
+    events_dir: Path,
+    post_url: str,
+) -> bool:
+    """Render the event template when the event is today or later."""
+    render_path = expected_render_path(event_data, events_dir)
+    if not render_path:
+        LOGGER.info("Skipping render for %s due to missing required fields", post_url)
+        return False
+    event_date = parse_event_date(event_data)
+    if not event_date:
+        LOGGER.info("Skipping render for %s due to invalid date", post_url)
+        return False
+    if event_date < date.today():
+        LOGGER.info("Skipping render for past event %s", post_url)
+        return False
+    if render_path.exists():
+        LOGGER.info("Event already rendered for %s", post_url)
+        return True
+    rendered = render_template(template, event_data)
+    render_path.write_text(rendered)
+    LOGGER.info("Event rendered for %s", post_url)
+    return True
+
+
 def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str, int]:
     """Return counts for each pipeline stage in the datastore."""
     counts = {
@@ -439,15 +466,25 @@ def extract_event_metadata_for_listings(
     for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
             continue
-        if store.event_already_processed():
+        metadata = store.load_metadata()
+        post_url = metadata.get("post_url") or store.post_dir.as_posix()
+        if store.event_error_path.exists():
             continue
+        if store.event_path.exists():
+            event_data = load_event_data(store.event_path)
+            if event_data:
+                render_event_template_if_upcoming(
+                    event_data, template, events_dir, post_url
+                )
+                continue
+            LOGGER.warning(
+                "Event data missing or invalid for %s; re-extracting", post_url
+            )
         analysis = store.load_analysis() or {}
         if not (analysis.get("is_event_listing") or analysis.get("is_event")):
             continue
 
-        metadata = store.load_metadata()
         caption = metadata.get("caption_text") or ""
-        post_url = metadata.get("post_url") or ""
         images = collect_media_images(store)
         post_date = metadata.get("taken_at")
         post_author = metadata.get("username")
@@ -490,14 +527,7 @@ def extract_event_metadata_for_listings(
             continue
 
         store.save_event(event_data)
-        event_date = parse_event_date(event_data)
-        if event_date and event_date >= date.today():
-            rendered = render_template(template, event_data)
-            filename = event_filename(event_data)
-            (events_dir / filename).write_text(rendered)
-            LOGGER.info("Event rendered for %s", post_url)
-        else:
-            LOGGER.info("Skipping render for past event %s", post_url)
+        render_event_template_if_upcoming(event_data, template, events_dir, post_url)
 
 
 def run_fetch(args: argparse.Namespace) -> None:
