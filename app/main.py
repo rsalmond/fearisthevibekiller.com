@@ -158,6 +158,14 @@ def find_handle_for_name(
         if cleaned.lower() in full_name:
             return handle
 
+    if cache:
+        cleaned_lower = cleaned.lower()
+        for entry in cache.iter_fresh_users():
+            user = entry.get("user") or {}
+            full_name = (user.get("full_name") or "").lower()
+            if cleaned_lower and cleaned_lower in full_name:
+                return entry.get("username")
+
     try:
         results = client.search_users(cleaned)
     except Exception:

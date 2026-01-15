@@ -11,6 +11,7 @@ from main import (
     choose_ticket_link,
     collect_progress_counts,
     format_percentage,
+    find_handle_for_name,
 )
 from template_renderer import event_filename, render_template
 
@@ -157,6 +158,24 @@ class TestProfileCache(unittest.TestCase):
 
             now[0] += 11
             self.assertFalse(cache.is_missing("ghostuser"))
+
+
+class TestHandleResolution(unittest.TestCase):
+    """Ensure handle resolution uses cached profile data."""
+
+    def test_find_handle_for_name_uses_cache(self) -> None:
+        """Resolve handles from cached full names without searching."""
+        class DummyClient:
+            """Stub client that errors if search is called."""
+
+            def search_users(self, _query: str) -> None:
+                raise AssertionError("search_users should not be called")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache = ProfileCache(Path(tmpdir), ttl_seconds=60)
+            cache.set("djhandle", {"full_name": "DJ Example"})
+            handle = find_handle_for_name(DummyClient(), "DJ Example", [], cache)
+            self.assertEqual(handle, "djhandle")
 
 
 class TestProgressReporting(unittest.TestCase):

@@ -128,6 +128,19 @@ class ProfileCache:
             return None
         return payload if isinstance(payload, dict) else None
 
+    def iter_fresh_users(self) -> List[Dict[str, Any]]:
+        """Return a list of cached profile entries within the refresh window."""
+        entries: List[Dict[str, Any]] = []
+        for path in self.cache_dir.glob("*.json"):
+            username = path.stem
+            payload = self._load_entry(username)
+            if not payload or payload.get("missing") is True:
+                continue
+            user = payload.get("user")
+            if isinstance(user, dict):
+                entries.append({"username": username, "user": user})
+        return entries
+
     def get(self, username: str) -> Optional[Dict[str, Any]]:
         """Load cached profile data if it is still fresh."""
         payload = self._load_entry(username)
