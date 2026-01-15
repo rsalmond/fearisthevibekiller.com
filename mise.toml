@@ -1,23 +1,36 @@
 [tasks.build]
 run = [{tasks = [
-  "build_events",
-  "render",
-  "fix_cname"
+  "site:build_events",
+  "site:clean",
+  "site:render",
+  "site:sync",
+  "site:fix_cname"
 ]}]
 
-[tasks.fix_cname]
-description = "Quarto render blows away ./docs/cname, we must restore it for github pages to function."
-run = "git checkout ./docs/CNAME"
+[tasks."site:build_events"]
+description = "Generate qmd files from _events/*"
+run = """
+./app/quarto_builder.py future > ./site/index.qmd
+./app/quarto_builder.py past > ./site/past.qmd
+"""
 
-[tasks.render]
+[tasks."site:clean"]
+description = "Rebuild from scratch, every time."
+run = "rm -rf ./docs/*"
+
+[tasks."site:render"]
 dir = "./site"
 run = "quarto render"
+depends = ["site:clean", "site:build_events"]
 
-[tasks.build_events]
-run = """
-./scripts/builder.py future > ./site/index.qmd
-./scripts/builder.py past > ./site/past.qmd
-"""
+[tasks."site:sync"]
+run = "rsync -a ./site/_docs/ ./docs/"
+depends = ["site:render"]
+
+[tasks."site:fix_cname"]
+description = "Quarto render blows away ./docs/cname, we must restore it for github pages to function."
+run = "git checkout ./docs/CNAME"
+depends = ["site:sync"]
 
 [tasks.ssh]
 run = "ssh admin@$(tart ip dev)"
