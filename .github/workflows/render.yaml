@@ -26,8 +26,12 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Install uv
-      uses: astral-sh/setup-uv@v6
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+
+    - name: Install mise tools
+      run: |
+        mise install
 
     - name: Install Quarto
       uses: quarto-dev/quarto-actions/setup@v2
@@ -36,29 +40,32 @@ jobs:
 
     - name: Render
       run: |
-        ./go.sh
+        mise build
+
+    - name: Check for significant changes
+      id: significant
+      run: |
+        if git diff --quiet -- site/past.qmd; then
+          echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "has_changes=true" >> "$GITHUB_OUTPUT"
 
     - name: Create branch
+      if: steps.significant.outputs.has_changes == 'true'
       run: |
         BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
         git checkout -b "$BRANCH_NAME"
         echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
     - name: Commit all changes
+      if: steps.significant.outputs.has_changes == 'true'
       run: |
-        git commit -am "Automated render update"
-
-    - name: Count significant diff lines
-      id: count_changes
-      run: |
-        git diff HEAD^ -- docs/index.html docs/past.html
-        git diff HEAD^ --numstat -- docs/index.html docs/past.html
-        DIFF_LINES=$(git diff HEAD^ --numstat -- docs/index.html docs/past.html | awk '{s+=$1+$2} END {print s}')
-        echo "diff_count=${DIFF_LINES}"
-        echo "diff_count=${DIFF_LINES}" >> $GITHUB_OUTPUT
+        git add -A
+        git commit -m "Automated render update"
 
     - name: Push branch
-      if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 8
+      if: steps.significant.outputs.has_changes == 'true'
       env:
         BRANCH_NAME: ${{ env.BRANCH_NAME }}
       run: |
@@ -66,7 +73,7 @@ jobs:
         git push --force --set-upstream origin "$BRANCH_NAME"
 
     - name: Open pull request
-      if: steps.count_changes.outputs.diff_count != '' && steps.count_changes.outputs.diff_count > 8
+      if: steps.significant.outputs.has_changes == 'true'
       uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
