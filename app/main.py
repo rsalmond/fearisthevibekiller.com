@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired
 
-from datastore import PostKey, PostStore, datastore_root
+from datastore import PostKey, PostStore, ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
 from instagram_fetcher import FetchConfig, InstagramFetcher, fetch_accounts, load_accounts
 from event_listing_classifier import EventListingClassifier
@@ -94,26 +94,47 @@ def select_best_dj_link(links: Sequence[str]) -> Optional[str]:
     return None
 
 
-def fetch_profile_links(client: Client, username: str) -> List[str]:
-    """Return bio links and external URL for an Instagram user."""
-    links: List[str] = []
+def fetch_profile_data(
+    client: Client, username: str, cache: Optional[ProfileCache]
+) -> Optional[Dict[str, Any]]:
+    """Return profile data for a username, using cached data when available."""
+    if cache:
+        cached = cache.get(username)
+        if cached:
+            return cached
     try:
         data = client.private_request(f"users/{username}/usernameinfo/")
-        user = data.get("user") or {}
-        external_url = user.get("external_url")
-        if external_url:
-            links.append(external_url)
-        for link in user.get("bio_links") or []:
-            url = link.get("url")
-            if url:
-                links.append(url)
-        return links
     except Exception:
+        return None
+    user = data.get("user") if isinstance(data, dict) else None
+    if isinstance(user, dict) and cache:
+        cache.set(username, user)
+    return user if isinstance(user, dict) else None
+
+
+def fetch_profile_links(
+    client: Client, username: str, cache: Optional[ProfileCache]
+) -> List[str]:
+    """Return bio links and external URL for an Instagram user."""
+    links: List[str] = []
+    user = fetch_profile_data(client, username, cache)
+    if not user:
         return links
+    external_url = user.get("external_url")
+    if external_url:
+        links.append(external_url)
+    for link in user.get("bio_links") or []:
+        url = link.get("url")
+        if url:
+            links.append(url)
+    return links
 
 
 def find_handle_for_name(
-    client: Client, name: str, mentions: Sequence[str]
+    client: Client,
+    name: str,
+    mentions: Sequence[str],
+    cache: Optional[ProfileCache],
 ) -> Optional[str]:
     """Resolve a DJ name to a likely Instagram handle."""
     cleaned = name.strip()
@@ -124,11 +145,9 @@ def find_handle_for_name(
     for handle in mentions:
         if normalized and normalized in handle.replace(".", ""):
             return handle
-        try:
-            data = client.private_request(f"users/{handle}/usernameinfo/")
-        except Exception:
+        user = fetch_profile_data(client, handle, cache)
+        if not user:
             continue
-        user = data.get("user") or {}
         full_name = (user.get("full_name") or "").lower()
         if cleaned.lower() in full_name:
             return handle
@@ -138,7 +157,9 @@ def find_handle_for_name(
     except Exception:
         return None
     if results:
-        return results[0].username
+        username = results[0].username
+        fetch_profile_data(client, username, cache)
+        return username
     return None
 
 
@@ -146,6 +167,7 @@ def enrich_dj_links(
     djs: List[Dict[str, str]],
     caption: str,
     session_file: Path,
+    cache: Optional[ProfileCache] = None,
 ) -> List[Dict[str, str]]:
     """Populate DJ links using Instagram profiles and mentions."""
     mentions = extract_mentions(caption)
@@ -162,12 +184,12 @@ def enrich_dj_links(
     for dj in djs:
         name = dj.get("name") or ""
         try:
-            handle = find_handle_for_name(client, name, mentions)
+            handle = find_handle_for_name(client, name, mentions, cache)
         except Exception:
             handle = None
         if handle:
             try:
-                links = fetch_profile_links(client, handle)
+                links = fetch_profile_links(client, handle, cache)
                 best = select_best_dj_link(links)
                 dj["link"] = best or instagram_profile_url(handle)
             except Exception:
@@ -180,7 +202,7 @@ def enrich_dj_links(
         if handle.lower() in existing_names:
             continue
         try:
-            links = fetch_profile_links(client, handle)
+            links = fetch_profile_links(client, handle, cache)
             best = select_best_dj_link(links)
             djs.append({"name": handle, "link": best or instagram_profile_url(handle)})
         except Exception:
@@ -361,6 +383,7 @@ def extract_event_metadata_for_listings(
     template = load_template()
     events_dir.mkdir(parents=True, exist_ok=True)
 
+    profile_cache = ProfileCache(datastore_path)
     for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
             continue
@@ -395,7 +418,9 @@ def extract_event_metadata_for_listings(
         event_data = result.data or {}
         djs = event_data.get("djs") or []
         if isinstance(djs, list):
-            event_data["djs"] = enrich_dj_links(djs, caption, session_file)
+            event_data["djs"] = enrich_dj_links(
+                djs, caption, session_file, profile_cache
+            )
         ticket_update = choose_ticket_link(post_url, event_data.get("ticket_or_info_link"))
         event_data.update(ticket_update)
         missing = [

@@ -1,7 +1,8 @@
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,52 @@ class PostStore:
     def event_already_processed(self) -> bool:
         """Return True if event extraction succeeded or failed already."""
         return self.event_path.exists() or self.event_error_path.exists()
+
+
+class ProfileCache:
+    """Cache Instagram profile data on disk with a time-based refresh window."""
+
+    def __init__(
+        self,
+        root: Path,
+        ttl_seconds: int = 60 * 60 * 24,
+        time_func: Callable[[], float] = time.time,
+    ) -> None:
+        """Initialize the cache directory and expiry window."""
+        self.cache_dir = root / ".profile_cache"
+        self.ttl_seconds = ttl_seconds
+        self.time_func = time_func
+        self.cache_dir.mkdir(parents=True, exist_ok=True)
+
+    def _cache_path(self, username: str) -> Path:
+        """Return the path for a cached username entry."""
+        safe = username.lower().strip()
+        return self.cache_dir / f"{safe}.json"
+
+    def _is_fresh(self, cached_at: float) -> bool:
+        """Return True when the cached entry is within the refresh window."""
+        return (self.time_func() - cached_at) < self.ttl_seconds
+
+    def get(self, username: str) -> Optional[Dict[str, Any]]:
+        """Load cached profile data if it is still fresh."""
+        path = self._cache_path(username)
+        if not path.exists():
+            return None
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return None
+        cached_at = payload.get("cached_at")
+        if not isinstance(cached_at, (int, float)) or not self._is_fresh(cached_at):
+            return None
+        user = payload.get("user")
+        return user if isinstance(user, dict) else None
+
+    def set(self, username: str, user: Dict[str, Any]) -> None:
+        """Persist profile data to disk with a timestamp."""
+        path = self._cache_path(username)
+        payload = {"cached_at": self.time_func(), "user": user}
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def datastore_root(path: str) -> Path:

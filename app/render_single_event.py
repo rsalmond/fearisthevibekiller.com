@@ -8,6 +8,7 @@ from typing import Dict, List
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired
 
+from datastore import ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
 from main import choose_ticket_link, enrich_dj_links
 from template_renderer import event_filename, load_template, render_template
@@ -146,7 +147,10 @@ def main() -> None:
 
     djs = event_data.get("djs") or []
     if isinstance(djs, list):
-        event_data["djs"] = enrich_dj_links(djs, caption, Path(args.session_file))
+        cache = ProfileCache(datastore_root("/app/datastore"))
+        event_data["djs"] = enrich_dj_links(
+            djs, caption, Path(args.session_file), cache
+        )
     event_data.update(choose_ticket_link(post_url, event_data.get("ticket_or_info_link")))
 
     template = load_template()

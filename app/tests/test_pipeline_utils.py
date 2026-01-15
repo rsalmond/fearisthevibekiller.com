@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, "/app")
 
-from datastore import PostKey, PostStore
+from datastore import PostKey, PostStore, ProfileCache
 from main import (
     build_progress_table,
     choose_ticket_link,
@@ -122,6 +122,25 @@ class TestPostStore(unittest.TestCase):
             store.save_event({"event_name": "Test", "date": "2025-01-01"})
             self.assertTrue(store.event_path.exists())
             self.assertFalse(store.event_error_path.exists())
+
+
+class TestProfileCache(unittest.TestCase):
+    """Validate cached profile read/write behavior."""
+
+    def test_profile_cache_respects_ttl(self) -> None:
+        """Return cached data only within the refresh window."""
+        now = [1000.0]
+
+        def time_func() -> float:
+            return now[0]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache = ProfileCache(Path(tmpdir), ttl_seconds=10, time_func=time_func)
+            cache.set("DJHandle", {"full_name": "DJ Test"})
+            self.assertEqual(cache.get("djhandle"), {"full_name": "DJ Test"})
+
+            now[0] += 11
+            self.assertIsNone(cache.get("djhandle"))
 
 
 class TestProgressReporting(unittest.TestCase):
