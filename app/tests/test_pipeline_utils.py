@@ -202,7 +202,7 @@ class TestProgressReporting(unittest.TestCase):
             store1 = self.create_post_store(root, "user1", "POST1")
             store1.save_metadata({"caption_text": "one"})
             store1.save_analysis({"is_event_listing": True})
-            event_data = self.write_event(store1, "Event One", "2025-09-10")
+            event_data = self.write_event(store1, "Event One", "2099-09-10")
             rendered_path = events_dir / event_filename(event_data)
             rendered_path.write_text("rendered")
 
@@ -220,6 +220,7 @@ class TestProgressReporting(unittest.TestCase):
             self.assertEqual(counts["clip_event_listings"], 2)
             self.assertEqual(counts["extracted_success"], 1)
             self.assertEqual(counts["extracted_fail"], 1)
+            self.assertEqual(counts["extracted_upcoming"], 1)
             self.assertEqual(counts["rendered"], 1)
 
     def test_progress_table_formatting(self) -> None:
@@ -230,6 +231,7 @@ class TestProgressReporting(unittest.TestCase):
             "clip_event_listings": 2,
             "extracted_success": 1,
             "extracted_fail": 1,
+            "extracted_upcoming": 1,
             "rendered": 1,
         }
         table = build_progress_table(counts)
@@ -248,7 +250,8 @@ class TestProgressReporting(unittest.TestCase):
         self.assertEqual(rows["Extracted total"], ["2", "100.0%", "of CLIP events"])
         self.assertEqual(rows["- success"], ["1", "n/a", ""])
         self.assertEqual(rows["- fail"], ["1", "n/a", ""])
-        self.assertEqual(rows["Rendered"], ["1", "100.0%", "of extracted success"])
+        self.assertEqual(rows["Upcoming extracted"], ["1", "n/a", ""])
+        self.assertEqual(rows["Rendered"], ["1", "100.0%", "of upcoming extracted"])
 
     def test_format_percentage_zero_denominator(self) -> None:
         """Return 'n/a' when no denominator is available."""
