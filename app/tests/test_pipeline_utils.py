@@ -208,7 +208,7 @@ class TestProgressReporting(unittest.TestCase):
 
             store2 = self.create_post_store(root, "user2", "POST2")
             store2.save_metadata({"caption_text": "two"})
-            store2.save_analysis({"is_event_listing": False})
+            store2.save_analysis({"is_event_listing": True})
             store2.mark_event_failed("missing data")
 
             store3 = self.create_post_store(root, "user3", "POST3")
@@ -217,6 +217,7 @@ class TestProgressReporting(unittest.TestCase):
             counts = collect_progress_counts(root, events_dir)
             self.assertEqual(counts["downloaded"], 3)
             self.assertEqual(counts["clip_analyzed"], 2)
+            self.assertEqual(counts["clip_event_listings"], 2)
             self.assertEqual(counts["extracted_success"], 1)
             self.assertEqual(counts["extracted_fail"], 1)
             self.assertEqual(counts["rendered"], 1)
@@ -226,6 +227,7 @@ class TestProgressReporting(unittest.TestCase):
         counts = {
             "downloaded": 4,
             "clip_analyzed": 2,
+            "clip_event_listings": 2,
             "extracted_success": 1,
             "extracted_fail": 1,
             "rendered": 1,
@@ -233,18 +235,20 @@ class TestProgressReporting(unittest.TestCase):
         table = build_progress_table(counts)
         rows = {}
         for line in table.splitlines():
-            if not line.startswith("|") or "Metric" in line:
+            if not line.startswith("|") or "Stage" in line:
                 continue
             cells = [cell.strip() for cell in line.strip("|").split("|")]
-            if len(cells) == 3:
+            if len(cells) == 4:
                 rows[cells[0]] = cells[1:]
 
-        self.assertEqual(rows["Downloaded posts"], ["4", "100.0%"])
-        self.assertEqual(rows["CLIP analyzed"], ["2", "50.0%"])
-        self.assertEqual(rows["Extracted total"], ["2", "100.0%"])
-        self.assertEqual(rows["Extracted success"], ["1", "n/a"])
-        self.assertEqual(rows["Extracted fail"], ["1", "n/a"])
-        self.assertEqual(rows["Rendered"], ["1", "100.0%"])
+        self.assertEqual(rows["Downloaded posts"], ["4", "100.0%", ""])
+        self.assertEqual(rows["CLIP analyzed"], ["2", "50.0%", "of downloaded"])
+        self.assertEqual(rows["- events"], ["2", "n/a", "classification result"])
+        self.assertEqual(rows["- non-events"], ["0", "n/a", "classification result"])
+        self.assertEqual(rows["Extracted total"], ["2", "100.0%", "of CLIP events"])
+        self.assertEqual(rows["- success"], ["1", "n/a", ""])
+        self.assertEqual(rows["- fail"], ["1", "n/a", ""])
+        self.assertEqual(rows["Rendered"], ["1", "100.0%", "of extracted success"])
 
     def test_format_percentage_zero_denominator(self) -> None:
         """Return 'n/a' when no denominator is available."""

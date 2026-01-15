@@ -273,6 +273,7 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
     counts = {
         "downloaded": 0,
         "clip_analyzed": 0,
+        "clip_event_listings": 0,
         "extracted_success": 0,
         "extracted_fail": 0,
         "rendered": 0,
@@ -284,6 +285,9 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
         counts["downloaded"] += 1
         if store.analysis_path.exists():
             counts["clip_analyzed"] += 1
+            analysis = store.load_analysis() or {}
+            if analysis.get("is_event_listing") or analysis.get("is_event"):
+                counts["clip_event_listings"] += 1
         if store.event_path.exists():
             counts["extracted_success"] += 1
         if store.event_error_path.exists():
@@ -310,48 +314,62 @@ def build_progress_table(counts: Dict[str, int]) -> str:
     """Build a plain-text table of progress metrics."""
     downloaded = counts["downloaded"]
     clip_analyzed = counts["clip_analyzed"]
+    clip_event_listings = counts["clip_event_listings"]
+    clip_non_events = max(clip_analyzed - clip_event_listings, 0)
     extracted_success = counts["extracted_success"]
     extracted_fail = counts["extracted_fail"]
     extracted_total = extracted_success + extracted_fail
     rendered = counts["rendered"]
 
-    rows: List[Tuple[str, str, str]] = [
-        ("Downloaded posts", str(downloaded), "100.0%" if downloaded else "n/a"),
+    rows: List[Tuple[str, str, str, str]] = [
+        (
+            "Downloaded posts",
+            str(downloaded),
+            "100.0%" if downloaded else "n/a",
+            "",
+        ),
         (
             "CLIP analyzed",
             str(clip_analyzed),
             format_percentage(clip_analyzed, downloaded),
+            "of downloaded",
         ),
+        ("  - events", str(clip_event_listings), "n/a", "classification result"),
+        ("  - non-events", str(clip_non_events), "n/a", "classification result"),
         (
             "Extracted total",
             str(extracted_total),
-            format_percentage(extracted_total, clip_analyzed),
+            format_percentage(extracted_total, clip_event_listings),
+            "of CLIP events",
         ),
-        ("Extracted success", str(extracted_success), "n/a"),
-        ("Extracted fail", str(extracted_fail), "n/a"),
+        ("  - success", str(extracted_success), "n/a", ""),
+        ("  - fail", str(extracted_fail), "n/a", ""),
         (
             "Rendered",
             str(rendered),
             format_percentage(rendered, extracted_success),
+            "of extracted success",
         ),
     ]
 
-    headers = ("Metric", "Count", "Percent")
+    headers = ("Stage", "Count", "Percent", "Notes")
     widths = [
         max(len(headers[0]), max(len(row[0]) for row in rows)),
         max(len(headers[1]), max(len(row[1]) for row in rows)),
         max(len(headers[2]), max(len(row[2]) for row in rows)),
+        max(len(headers[3]), max(len(row[3]) for row in rows)),
     ]
 
-    def format_row(values: Tuple[str, str, str]) -> str:
+    def format_row(values: Tuple[str, str, str, str]) -> str:
         return (
             f"| {values[0].ljust(widths[0])} "
             f"| {values[1].rjust(widths[1])} "
-            f"| {values[2].rjust(widths[2])} |"
+            f"| {values[2].rjust(widths[2])} "
+            f"| {values[3].ljust(widths[3])} |"
         )
 
     border = (
-        f"+-{'-' * widths[0]}-+-{'-' * widths[1]}-+-{'-' * widths[2]}-+"
+        f"+-{'-' * widths[0]}-+-{'-' * widths[1]}-+-{'-' * widths[2]}-+-{'-' * widths[3]}-+"
     )
     lines = [border, format_row(headers), border]
     lines.extend(format_row(row) for row in rows)
