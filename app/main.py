@@ -99,12 +99,18 @@ def fetch_profile_data(
 ) -> Optional[Dict[str, Any]]:
     """Return profile data for a username, using cached data when available."""
     if cache:
+        if cache.is_missing(username):
+            return None
         cached = cache.get(username)
         if cached:
             return cached
     try:
         data = client.private_request(f"users/{username}/usernameinfo/")
-    except Exception:
+    except Exception as exc:
+        if cache:
+            message = str(exc).lower()
+            if "404" in message or "not found" in message:
+                cache.set_missing(username)
         return None
     user = data.get("user") if isinstance(data, dict) else None
     if isinstance(user, dict) and cache:
@@ -318,7 +324,7 @@ def build_progress_table(counts: Dict[str, int]) -> str:
         (
             "Rendered",
             str(rendered),
-            format_percentage(rendered, extracted_total),
+            format_percentage(rendered, extracted_success),
         ),
     ]
 

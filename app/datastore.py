@@ -114,8 +114,8 @@ class ProfileCache:
         """Return True when the cached entry is within the refresh window."""
         return (self.time_func() - cached_at) < self.ttl_seconds
 
-    def get(self, username: str) -> Optional[Dict[str, Any]]:
-        """Load cached profile data if it is still fresh."""
+    def _load_entry(self, username: str) -> Optional[Dict[str, Any]]:
+        """Load a cached entry if it exists and is still fresh."""
         path = self._cache_path(username)
         if not path.exists():
             return None
@@ -126,13 +126,31 @@ class ProfileCache:
         cached_at = payload.get("cached_at")
         if not isinstance(cached_at, (int, float)) or not self._is_fresh(cached_at):
             return None
+        return payload if isinstance(payload, dict) else None
+
+    def get(self, username: str) -> Optional[Dict[str, Any]]:
+        """Load cached profile data if it is still fresh."""
+        payload = self._load_entry(username)
+        if not payload or payload.get("missing") is True:
+            return None
         user = payload.get("user")
         return user if isinstance(user, dict) else None
+
+    def is_missing(self, username: str) -> bool:
+        """Return True when a cached entry marks the profile as missing."""
+        payload = self._load_entry(username)
+        return bool(payload and payload.get("missing") is True)
 
     def set(self, username: str, user: Dict[str, Any]) -> None:
         """Persist profile data to disk with a timestamp."""
         path = self._cache_path(username)
         payload = {"cached_at": self.time_func(), "user": user}
+        path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+
+    def set_missing(self, username: str) -> None:
+        """Persist a missing-profile marker to disk with a timestamp."""
+        path = self._cache_path(username)
+        payload = {"cached_at": self.time_func(), "missing": True}
         path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
