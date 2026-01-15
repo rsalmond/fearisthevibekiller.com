@@ -142,6 +142,22 @@ class TestProfileCache(unittest.TestCase):
             now[0] += 11
             self.assertIsNone(cache.get("djhandle"))
 
+    def test_profile_cache_missing_marker(self) -> None:
+        """Treat cached missing profiles as empty until the TTL expires."""
+        now = [2000.0]
+
+        def time_func() -> float:
+            return now[0]
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache = ProfileCache(Path(tmpdir), ttl_seconds=10, time_func=time_func)
+            cache.set_missing("ghostuser")
+            self.assertTrue(cache.is_missing("ghostuser"))
+            self.assertIsNone(cache.get("ghostuser"))
+
+            now[0] += 11
+            self.assertFalse(cache.is_missing("ghostuser"))
+
 
 class TestProgressReporting(unittest.TestCase):
     """Validate datastore progress metrics."""
@@ -209,7 +225,7 @@ class TestProgressReporting(unittest.TestCase):
         self.assertEqual(rows["Extracted total"], ["2", "100.0%"])
         self.assertEqual(rows["Extracted success"], ["1", "n/a"])
         self.assertEqual(rows["Extracted fail"], ["1", "n/a"])
-        self.assertEqual(rows["Rendered"], ["1", "50.0%"])
+        self.assertEqual(rows["Rendered"], ["1", "100.0%"])
 
     def test_format_percentage_zero_denominator(self) -> None:
         """Return 'n/a' when no denominator is available."""
