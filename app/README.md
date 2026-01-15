@@ -64,6 +64,12 @@ Session notes
 sudo nerdctl build -t instagram-event-pipeline /app/app
 ```
 
+### Run the tests
+
+```console
+sudo nerdctl run --rm --env-file /secure/.env -e PYTHONPATH=/app/app -v /app:/app --entrypoint python instagram-event-pipeline -m unittest discover -s /app/app/tests
+```
+
 ### Run the progress report
 
 ```console
