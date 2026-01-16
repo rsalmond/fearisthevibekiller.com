@@ -35,6 +35,7 @@ jobs:
         run: |
           FILE="data/rejected_events.txt"
           POST_URL="${{ steps.extract.outputs.post_url }}"
+          POST_URL="${POST_URL%/}"
           mkdir -p "$(dirname "$FILE")"
           touch "$FILE"
           if ! grep -Fxq "$POST_URL" "$FILE"; then
