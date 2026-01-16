@@ -349,6 +349,7 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
         "rendered": 0,
     }
 
+    rejected_urls = load_rejected_post_urls(DEFAULT_REJECTED)
     today = date.today()
     for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
@@ -359,15 +360,17 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
             analysis = store.load_analysis() or {}
             if analysis.get("is_event_listing") or analysis.get("is_event"):
                 counts["clip_event_listings"] += 1
+        event_data = None
         if store.event_path.exists():
+            event_data = load_event_data(store.event_path)
+            post_url = (event_data or {}).get("post_url") or ""
+            if post_url and post_url in rejected_urls:
+                continue
             counts["extracted_success"] += 1
         if store.event_error_path.exists():
             counts["extracted_fail"] += 1
 
-        if store.event_path.exists():
-            event_data = load_event_data(store.event_path)
-            if not event_data:
-                continue
+        if event_data:
             event_date = parse_event_date(event_data)
             if event_date and event_date >= today:
                 counts["extracted_upcoming"] += 1
