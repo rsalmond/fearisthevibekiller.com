@@ -46,6 +46,16 @@ description = "Run fetch, classify, and extraction in sequence."
 depends = ["app:build"]
 run = "sudo nerdctl run --rm --env-file /secure/.env -v /app/data:/app/data -v /app/datastore:/datastore -v /secure:/secure --entrypoint python instagram-event-pipeline /app/main.py run --accounts /app/data/accounts.txt"
 
+[tasks."app:pr-events"]
+description = "Create one PR per new rendered event QMD file."
+run = """
+set -euo pipefail
+set -a
+. /secure/.env
+set +a
+python3 ./scripts/create_event_prs.py
+"""
+
 [tasks."site:build_events"]
 description = "Generate qmd files from _events/*"
 run = """
@@ -121,4 +131,5 @@ exec ssh -o StrictHostKeyChecking=no \
 """
 
 [tools]
+gh = "latest"
 uv = "latest"

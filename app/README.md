@@ -66,3 +66,5 @@ Mise tasks
 - app:classify classifies event listings.
 - app:extract extracts metadata and renders templates.
 - app:run runs the full pipeline sequence.
+- app:pr-events opens one PR per new event file (requires `GH_TOKEN` or `GITHUB_TOKEN`).
+- Rendered QMD files include an `event-meta` comment used by `app:pr-events`.
