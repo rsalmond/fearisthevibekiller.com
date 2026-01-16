@@ -45,7 +45,7 @@ jobs:
     - name: Check for significant changes
       id: significant
       run: |
-        if git diff --quiet -- site/past.qmd; then
+        if git diff --quiet -- site/index.qmd; then
           echo "has_changes=false" >> "$GITHUB_OUTPUT"
           exit 0
         fi
