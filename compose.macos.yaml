@@ -1,0 +1,13 @@
+services:
+  app:
+    image: instagram-event-pipeline
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    env_file:
+      - ../fitvk.secure/.env
+    volumes:
+      - ./data:/app/data
+      - ./datastore:/datastore
+      - ../fitvk.secure:/secure
+    working_dir: /app
