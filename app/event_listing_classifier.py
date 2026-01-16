@@ -10,6 +10,7 @@ from typing import Dict, List, Optional, Tuple
 import torch
 from PIL import Image
 
+from paths import DEFAULT_DATASTORE
 
 EVENT_KEYWORDS = {
     "event",
@@ -81,6 +82,8 @@ class EventListingClassifier:
         device: Optional[str] = None,
     ) -> None:
         """Load the CLIP model and prepare prompts for scoring."""
+        cache_dir = Path(os.environ.get("CLIP_CACHE_DIR", str(DEFAULT_DATASTORE / ".cache")))
+        configure_clip_cache(cache_dir)
         import open_clip
 
         self.model_name = model_name
@@ -118,6 +121,19 @@ class EventListingClassifier:
         self.event_text = self._encode_text(self.event_prompts)
         self.non_event_text = self._encode_text(self.non_event_prompts)
         self.threshold = float(os.environ.get("EVENT_LISTING_THRESHOLD", "0.30"))
+
+
+def configure_clip_cache(cache_dir: Path) -> None:
+    """Set cache locations for CLIP and Hugging Face downloads."""
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    hf_cache = cache_dir / "huggingface"
+    torch_cache = cache_dir / "torch"
+    hf_cache.mkdir(parents=True, exist_ok=True)
+    torch_cache.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("HF_HOME", str(hf_cache))
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(hf_cache))
+    os.environ.setdefault("TRANSFORMERS_CACHE", str(hf_cache))
+    os.environ.setdefault("TORCH_HOME", str(torch_cache))
 
     def _encode_text(self, prompts: List[str]) -> torch.Tensor:
         """Embed prompt text with the CLIP text encoder."""
