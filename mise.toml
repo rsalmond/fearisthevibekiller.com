@@ -2,6 +2,7 @@
 CONTAINER_RUNTIME = "nerdctl"
 CONTAINER_RUNTIME_SUDO = "sudo"
 COMPOSE_FILE = "compose.yaml"
+SECRET_DIR = "/secure/"
 
 [tasks.go]
 description = "Fetch, classify, extract, and cut PRs"
@@ -54,14 +55,10 @@ description = "Create one PR per new rendered event QMD file."
 run = """
 set -euo pipefail
 set -a
-. /secure/.env
+. ${SECRET_DIR}.env
 set +a
 python3 ./scripts/create_event_prs.py
 """
-
-[tasks."app:clean-rejected"]
-description = "Remove rendered QMD files that match rejected_events.txt."
-run = "python3 ./scripts/cleanup_rejected_events.py"
 
 [tasks."site:build_events"]
 description = "Generate qmd files from _events/*"
@@ -69,6 +66,7 @@ run = """
 ./app/quarto_builder.py future > ./site/index.qmd
 ./app/quarto_builder.py past > ./site/past.qmd
 """
+
 [tasks."site:build"]
 description = "Run the entire site build and render process."
 run = [{tasks = [

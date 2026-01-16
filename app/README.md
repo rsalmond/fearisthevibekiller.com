@@ -14,6 +14,7 @@ Setup
   - OPENAI_API_KEY (only for second pass)
   - INSTAGRAM_FETCH_VERBOSE=1 to log per-account fetch errors
   - EVENT_LISTING_THRESHOLD=0.30 to set the event classifier threshold (lower is more sensitive)
+  - CLIP_CACHE_DIR=/datastore/.cache to control where CLIP model files are cached
   - LOG_LEVEL=DEBUG to enable debug logging for API calls and CLIP inference
 
 Usage
