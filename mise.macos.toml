@@ -1,0 +1,4 @@
+[env]
+CONTAINER_RUNTIME = "docker"
+CONTAINER_RUNTIME_SUDO = ""
+COMPOSE_FILE = "compose.macos.yaml"

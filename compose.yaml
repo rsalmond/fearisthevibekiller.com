@@ -1,0 +1,13 @@
+services:
+  app:
+    image: instagram-event-pipeline
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    env_file:
+      - /secure/.env
+    volumes:
+      - /app/data:/app/data
+      - /app/datastore:/datastore
+      - /secure:/secure
+    working_dir: /app
