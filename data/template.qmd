@@ -1,4 +1,3 @@
-```
 ### 👉 <EVENT NAME>
 
 Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
@@ -8,4 +7,3 @@ Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
 * [DJ Name](DJ Link)
 
 [Tickets|Info](URL)
-```
