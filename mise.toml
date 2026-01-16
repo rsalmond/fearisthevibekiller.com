@@ -3,6 +3,13 @@ CONTAINER_RUNTIME = "nerdctl"
 CONTAINER_RUNTIME_SUDO = "sudo"
 COMPOSE_FILE = "compose.yaml"
 
+[tasks.go]
+description = "Fetch, classify, extract, and cut PRs"
+run = [{tasks = [
+  "app:run",
+  "app:pr-events"
+]}]
+
 [tasks."app:build"]
 description = "Build the application container image."
 run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose build app"
