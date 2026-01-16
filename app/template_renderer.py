@@ -17,6 +17,11 @@ def render_template(template: str, event: Dict) -> str:
     def safe(value: str) -> str:
         return value if value else ""
 
+    def meta_value(value: str) -> str:
+        cleaned = (value or "").replace("\n", " ").replace("\r", " ")
+        cleaned = cleaned.replace(";", ",").replace("-->", "--")
+        return cleaned.strip()
+
     dj_lines = []
     seen_names = set()
     for dj in event.get("djs") or []:
@@ -40,7 +45,18 @@ def render_template(template: str, event: Dict) -> str:
     ticket_link = event.get("ticket_or_info_link") or ""
     ticket_label = "Tickets" if event.get("ticket_link_type") == "tickets" else "Info"
 
-    rendered = template
+    post_url = meta_value(event.get("post_url") or "")
+    event_name = meta_value(event.get("event_name") or "")
+    event_date = meta_value(event.get("date") or "")
+    meta_comment = (
+        "<!-- event-meta: "
+        f"post_url={post_url}; "
+        f"ticket_link={meta_value(ticket_link)}; "
+        f"event_date={event_date}; "
+        f"event_name={event_name} -->\n"
+    )
+
+    rendered = meta_comment + template
     rendered = rendered.replace("<EVENT NAME>", safe(event.get("event_name")))
     rendered = rendered.replace("STARTTIME-ENDTIME", time_block)
     rendered = rendered.replace("* [DJ Name](DJ Link)", dj_block)

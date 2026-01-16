@@ -328,7 +328,10 @@ def render_event_template_if_upcoming(
     if render_path.exists():
         LOGGER.info("Event already rendered for %s", post_url)
         return True
-    rendered = render_template(template, event_data)
+    render_payload = dict(event_data)
+    if post_url:
+        render_payload.setdefault("post_url", post_url)
+    rendered = render_template(template, render_payload)
     render_path.write_text(rendered)
     LOGGER.info("Event rendered for %s", post_url)
     return True
@@ -539,6 +542,7 @@ def extract_event_metadata_for_listings(
             )
         ticket_update = choose_ticket_link(post_url, event_data.get("ticket_or_info_link"))
         event_data.update(ticket_update)
+        event_data.setdefault("post_url", post_url)
         missing = [
             field
             for field in [
