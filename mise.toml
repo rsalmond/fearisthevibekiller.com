@@ -7,10 +7,8 @@ COMPOSE_RUN_FLAGS = "--interactive=false"
 
 [tasks.go]
 description = "Fetch, classify, extract, and cut PRs"
-run = [{tasks = [
-  "app:run",
-  "app:pr-events"
-]}]
+depends = ["app:pr-events"]
+run = "true"
 
 [tasks."app:build"]
 description = "Build the application container image."
@@ -53,6 +51,8 @@ run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE
 
 [tasks."app:pr-events"]
 description = "Create one PR per new rendered event QMD file."
+depends = ["app:run"]
+dir = "."
 run = """
 set -euo pipefail
 set -a
