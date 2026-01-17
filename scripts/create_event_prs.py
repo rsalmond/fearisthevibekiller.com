@@ -17,16 +17,30 @@ EVENTS_DIR = Path("data") / "_events"
 META_PATTERN = re.compile(r"^<!--\s*event-meta:\s*(.+?)\s*-->$")
 
 
+def prepare_command(args: list[str], cwd: Path) -> list[str]:
+    """Prepare command arguments for execution."""
+    if args and args[0] == "git":
+        return ["git", "-c", f"safe.directory={cwd.as_posix()}"] + args[1:]
+    return args
+
+
 def run_command(args: list[str], cwd: Path, check: bool = True) -> str:
     """Run a command and return stdout."""
-    result = subprocess.run(
-        args,
-        cwd=cwd,
-        check=check,
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-    )
+    command = prepare_command(args, cwd)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=cwd,
+            check=check,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except subprocess.CalledProcessError as exc:
+        message = exc.stderr.strip()
+        if message:
+            LOGGER.error("Command failed: %s", message)
+        raise
     output = result.stdout.strip()
     if result.stderr.strip():
         LOGGER.debug("Command stderr: %s", result.stderr.strip())
