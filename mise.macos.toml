@@ -2,4 +2,5 @@
 CONTAINER_RUNTIME = "docker"
 CONTAINER_RUNTIME_SUDO = ""
 COMPOSE_FILE = "compose.macos.yaml"
+COMPOSE_RUN_FLAGS = "-T"
 SECRET_DIR = "../fitvk.secure/"

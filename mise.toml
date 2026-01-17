@@ -3,6 +3,7 @@ CONTAINER_RUNTIME = "nerdctl"
 CONTAINER_RUNTIME_SUDO = "sudo"
 COMPOSE_FILE = "compose.yaml"
 SECRET_DIR = "/secure/"
+COMPOSE_RUN_FLAGS = "--interactive=false"
 
 [tasks.go]
 description = "Fetch, classify, extract, and cut PRs"
@@ -23,32 +24,32 @@ sources = [
 [tasks."app:test"]
 description = "Run unit tests inside the application container."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm --entrypoint python app -m unittest discover -s /app/tests"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app -m unittest discover -s /app/tests"
 
 [tasks."app:progress"]
 description = "Show pipeline progress."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm --entrypoint python app /app/main.py progress"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app /app/main.py progress"
 
 [tasks."app:fetch"]
 description = "Fetch new posts for configured accounts."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm --entrypoint python app /app/main.py fetch --accounts /app/data/accounts.txt"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app /app/main.py fetch --accounts /app/data/accounts.txt"
 
 [tasks."app:classify"]
 description = "Classify posts as event listings."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm --entrypoint python app /app/main.py classify-events"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app /app/main.py classify-events"
 
 [tasks."app:extract"]
 description = "Extract event metadata and render templates."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm -e LOG_LEVEL=INFO --entrypoint python app /app/main.py extract-events"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} -e LOG_LEVEL=INFO --entrypoint python app /app/main.py extract-events"
 
 [tasks."app:run"]
 description = "Run fetch, classify, and extraction in sequence."
 depends = ["app:build"]
-run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm --entrypoint python app /app/main.py run --accounts /app/data/accounts.txt"
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app /app/main.py run --accounts /app/data/accounts.txt"
 
 [tasks."app:pr-events"]
 description = "Create one PR per new rendered event QMD file."
