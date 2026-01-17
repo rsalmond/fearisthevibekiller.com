@@ -303,17 +303,38 @@ def load_rejected_post_urls(rejected_path: Path) -> set[str]:
     return urls
 
 
+def load_rendered_post_urls(events_dir: Path) -> set[str]:
+    """Load rendered post URLs from event metadata comments."""
+    if not events_dir.exists():
+        return set()
+
+    post_urls: set[str] = set()
+    for path in events_dir.glob("*.qmd"):
+        try:
+            content = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        match = re.search(r"event-meta:.*post_url=([^;\s]+)", content)
+        if match:
+            post_urls.add(match.group(1).strip())
+    return post_urls
+
+
 def render_event_template_if_upcoming(
     event_data: Dict[str, Any],
     template: str,
     events_dir: Path,
     post_url: str,
     rejected_urls: set[str],
+    rendered_post_urls: set[str],
 ) -> bool:
     """Render the event template when the event is today or later."""
     if post_url and post_url in rejected_urls:
         LOGGER.info("Skipping render for rejected event %s", post_url)
         return False
+    if post_url and post_url in rendered_post_urls:
+        LOGGER.info("Event already rendered for %s", post_url)
+        return True
     render_path = expected_render_path(event_data, events_dir)
     if not render_path:
         LOGGER.info("Skipping render for %s due to missing required fields", post_url)
@@ -333,6 +354,8 @@ def render_event_template_if_upcoming(
         render_payload.setdefault("post_url", post_url)
     rendered = render_template(template, render_payload)
     render_path.write_text(rendered)
+    if post_url:
+        rendered_post_urls.add(post_url)
     LOGGER.info("Event rendered for %s", post_url)
     return True
 
@@ -350,6 +373,7 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
     }
 
     rejected_urls = load_rejected_post_urls(DEFAULT_REJECTED)
+    rendered_post_urls = load_rendered_post_urls(events_dir)
     today = date.today()
     for store in iter_post_stores(datastore_path):
         if not store.metadata_path.exists():
@@ -361,6 +385,7 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
             if analysis.get("is_event_listing") or analysis.get("is_event"):
                 counts["clip_event_listings"] += 1
         event_data = None
+        post_url = ""
         if store.event_path.exists():
             event_data = load_event_data(store.event_path)
             post_url = (event_data or {}).get("post_url") or ""
@@ -374,9 +399,12 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
             event_date = parse_event_date(event_data)
             if event_date and event_date >= today:
                 counts["extracted_upcoming"] += 1
-                render_path = expected_render_path(event_data, events_dir)
-                if render_path and render_path.exists():
+                if post_url and post_url in rendered_post_urls:
                     counts["rendered"] += 1
+                else:
+                    render_path = expected_render_path(event_data, events_dir)
+                    if render_path and render_path.exists():
+                        counts["rendered"] += 1
     return counts
 
 
@@ -494,6 +522,7 @@ def extract_event_metadata_for_listings(
     template = load_template()
     events_dir.mkdir(parents=True, exist_ok=True)
     rejected_urls = load_rejected_post_urls(DEFAULT_REJECTED)
+    rendered_post_urls = load_rendered_post_urls(events_dir)
 
     profile_cache = ProfileCache(datastore_path)
     for store in iter_post_stores(datastore_path):
@@ -507,7 +536,12 @@ def extract_event_metadata_for_listings(
             event_data = load_event_data(store.event_path)
             if event_data:
                 render_event_template_if_upcoming(
-                    event_data, template, events_dir, post_url, rejected_urls
+                    event_data,
+                    template,
+                    events_dir,
+                    post_url,
+                    rejected_urls,
+                    rendered_post_urls,
                 )
                 continue
             LOGGER.warning(
@@ -562,7 +596,12 @@ def extract_event_metadata_for_listings(
 
         store.save_event(event_data)
         render_event_template_if_upcoming(
-            event_data, template, events_dir, post_url, rejected_urls
+            event_data,
+            template,
+            events_dir,
+            post_url,
+            rejected_urls,
+            rendered_post_urls,
         )
 
 

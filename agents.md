@@ -47,5 +47,4 @@ at all times prefer an efficient build for the Dockerfile
 
 never rebuild the image while iterating unless you need a new dep or requirement, just mount the source code as a volume and run
 
-
-Use the mise tasks under /app/mise.toml for common app workflows.
+There are mise tasks (see /app/mise.toml) for running common project workflows. When you need to execute project code, check for an existing mise task first and use that.
