@@ -29,6 +29,13 @@ TICKET_DOMAINS = {"eventbrite.com", "luma.com", "lu.ma", "tixr.com", "dice.fm"}
 LOGGER = logging.getLogger(__name__)
 
 
+def normalize_post_url(value: str) -> str:
+    """Normalize post URLs for consistent comparisons."""
+    if not value:
+        return ""
+    return value.strip().rstrip("/")
+
+
 def collect_media_images(store: PostStore) -> List[Path]:
     """Return a list of image paths for a post."""
     images = []
@@ -297,7 +304,9 @@ def load_rejected_post_urls(rejected_path: Path) -> set[str]:
             stripped = line.strip()
             if not stripped or stripped.startswith("#"):
                 continue
-            urls.add(stripped)
+            normalized = normalize_post_url(stripped)
+            if normalized:
+                urls.add(normalized)
     except OSError:
         return set()
     return urls
@@ -316,7 +325,9 @@ def load_rendered_post_urls(events_dir: Path) -> set[str]:
             continue
         match = re.search(r"event-meta:.*post_url=([^;\s]+)", content)
         if match:
-            post_urls.add(match.group(1).strip())
+            normalized = normalize_post_url(match.group(1))
+            if normalized:
+                post_urls.add(normalized)
     return post_urls
 
 
@@ -329,34 +340,38 @@ def render_event_template_if_upcoming(
     rendered_post_urls: set[str],
 ) -> bool:
     """Render the event template when the event is today or later."""
-    if post_url and post_url in rejected_urls:
-        LOGGER.info("Skipping render for rejected event %s", post_url)
+    normalized_url = normalize_post_url(post_url)
+    if normalized_url and normalized_url in rejected_urls:
+        LOGGER.info("Skipping render for rejected event %s", post_url or normalized_url)
         return False
-    if post_url and post_url in rendered_post_urls:
-        LOGGER.info("Event already rendered for %s", post_url)
+    if normalized_url and normalized_url in rendered_post_urls:
+        LOGGER.info("Event already rendered for %s", post_url or normalized_url)
         return True
     render_path = expected_render_path(event_data, events_dir)
     if not render_path:
-        LOGGER.info("Skipping render for %s due to missing required fields", post_url)
+        LOGGER.info(
+            "Skipping render for %s due to missing required fields",
+            post_url or normalized_url,
+        )
         return False
     event_date = parse_event_date(event_data)
     if not event_date:
-        LOGGER.info("Skipping render for %s due to invalid date", post_url)
+        LOGGER.info("Skipping render for %s due to invalid date", post_url or normalized_url)
         return False
     if event_date < date.today():
-        LOGGER.info("Skipping render for past event %s", post_url)
+        LOGGER.info("Skipping render for past event %s", post_url or normalized_url)
         return False
     if render_path.exists():
-        LOGGER.info("Event already rendered for %s", post_url)
+        LOGGER.info("Event already rendered for %s", post_url or normalized_url)
         return True
     render_payload = dict(event_data)
-    if post_url:
-        render_payload.setdefault("post_url", post_url)
+    if normalized_url:
+        render_payload.setdefault("post_url", normalized_url)
     rendered = render_template(template, render_payload)
     render_path.write_text(rendered)
-    if post_url:
-        rendered_post_urls.add(post_url)
-    LOGGER.info("Event rendered for %s", post_url)
+    if normalized_url:
+        rendered_post_urls.add(normalized_url)
+    LOGGER.info("Event rendered for %s", post_url or normalized_url)
     return True
 
 
@@ -388,7 +403,7 @@ def collect_progress_counts(datastore_path: Path, events_dir: Path) -> Dict[str,
         post_url = ""
         if store.event_path.exists():
             event_data = load_event_data(store.event_path)
-            post_url = (event_data or {}).get("post_url") or ""
+            post_url = normalize_post_url((event_data or {}).get("post_url") or "")
             if post_url and post_url in rejected_urls:
                 continue
             counts["extracted_success"] += 1
@@ -529,7 +544,9 @@ def extract_event_metadata_for_listings(
         if not store.metadata_path.exists():
             continue
         metadata = store.load_metadata()
-        post_url = metadata.get("post_url") or store.post_dir.as_posix()
+        post_url = normalize_post_url(
+            metadata.get("post_url") or store.post_dir.as_posix()
+        )
         if store.event_error_path.exists():
             continue
         if store.event_path.exists():

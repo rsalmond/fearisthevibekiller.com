@@ -1,9 +1,9 @@
 # Post URLs to skip rendering, one per line.
-https://www.instagram.com/p/DTb598fjcX_/
-https://www.instagram.com/p/DTc2IO_kU7H/
-https://www.instagram.com/p/DTRfRCKDeAe/
-https://www.instagram.com/p/DTN5E4XCf7E/
-https://www.instagram.com/p/DTOQDYflQlc/
+https://www.instagram.com/p/DTb598fjcX_
+https://www.instagram.com/p/DTc2IO_kU7H
+https://www.instagram.com/p/DTRfRCKDeAe
+https://www.instagram.com/p/DTN5E4XCf7E
+https://www.instagram.com/p/DTOQDYflQlc
 https://www.instagram.com/p/DTOQDYflQlc
 https://www.instagram.com/p/DTI1jhTjsNs
 https://www.instagram.com/p/DTdOYcYkZas
