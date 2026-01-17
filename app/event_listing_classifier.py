@@ -122,19 +122,6 @@ class EventListingClassifier:
         self.non_event_text = self._encode_text(self.non_event_prompts)
         self.threshold = float(os.environ.get("EVENT_LISTING_THRESHOLD", "0.30"))
 
-
-def configure_clip_cache(cache_dir: Path) -> None:
-    """Set cache locations for CLIP and Hugging Face downloads."""
-    cache_dir.mkdir(parents=True, exist_ok=True)
-    hf_cache = cache_dir / "huggingface"
-    torch_cache = cache_dir / "torch"
-    hf_cache.mkdir(parents=True, exist_ok=True)
-    torch_cache.mkdir(parents=True, exist_ok=True)
-    os.environ.setdefault("HF_HOME", str(hf_cache))
-    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(hf_cache))
-    os.environ.setdefault("TRANSFORMERS_CACHE", str(hf_cache))
-    os.environ.setdefault("TORCH_HOME", str(torch_cache))
-
     def _encode_text(self, prompts: List[str]) -> torch.Tensor:
         """Embed prompt text with the CLIP text encoder."""
         tokens = self.tokenizer(prompts)
@@ -197,7 +184,6 @@ def configure_clip_cache(cache_dir: Path) -> None:
             combined = keyword_score
         else:
             combined = (0.55 * keyword_score) + (0.45 * (1 / (1 + math.exp(-clip_score))))
-
         is_event = combined >= self.threshold
         details = {
             "keyword_score": keyword_score,
@@ -206,3 +192,15 @@ def configure_clip_cache(cache_dir: Path) -> None:
             "threshold": self.threshold,
         }
         return ClassificationResult(is_event=is_event, score=combined, details=details)
+
+def configure_clip_cache(cache_dir: Path) -> None:
+    """Set cache locations for CLIP and Hugging Face downloads."""
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    hf_cache = cache_dir / "huggingface"
+    torch_cache = cache_dir / "torch"
+    hf_cache.mkdir(parents=True, exist_ok=True)
+    torch_cache.mkdir(parents=True, exist_ok=True)
+    os.environ.setdefault("HF_HOME", str(hf_cache))
+    os.environ.setdefault("HUGGINGFACE_HUB_CACHE", str(hf_cache))
+    os.environ.setdefault("TRANSFORMERS_CACHE", str(hf_cache))
+    os.environ.setdefault("TORCH_HOME", str(torch_cache))
