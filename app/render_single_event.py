@@ -174,6 +174,8 @@ def main() -> None:
             djs, caption, Path(args.session_file), cache
         )
     event_data.update(choose_ticket_link(post_url, event_data.get("ticket_or_info_link")))
+    if post_url:
+        event_data["post_url"] = post_url
 
     template = load_template()
     rendered = render_template(template, event_data)

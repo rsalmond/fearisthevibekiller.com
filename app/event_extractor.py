@@ -81,6 +81,10 @@ def extract_event_metadata_from_post(
         "Include every DJ name mentioned in the caption or visible in the images. "
         "Use the post date as context when inferring the event date. "
         "Use the instagram post URL as the fallback info link if no official link is present. "
+        "For start_time and end_time, use 24-hour HH:MM when exact times are provided. "
+        "If the post uses terms like 'late', 'midnight', 'sundown', 'sunrise', or 'close', "
+        "return those words exactly (lowercase) in end_time instead of a clock time. "
+        "If the post says 'until late' or similar, set end_time to 'late'. "
         "ticket_link_type must be 'tickets' when the link is for tickets, or 'info' otherwise. "
         "Return confidence as a number between 0 and 1, where higher means more certain."
     )
@@ -89,7 +93,7 @@ def extract_event_metadata_from_post(
         "event_name": "string",
         "date": "YYYY-MM-DD",
         "start_time": "HH:MM",
-        "end_time": "HH:MM",
+        "end_time": "HH:MM or 'late'/'midnight'/'sundown'/'sunrise'/'close'",
         "djs": [{"name": "string", "link": "string"}],
         "ticket_or_info_link": "string",
         "ticket_link_type": "tickets|info",
