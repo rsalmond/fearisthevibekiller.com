@@ -61,6 +61,10 @@ set +a
 python3 ./scripts/create_event_prs.py
 """
 
+[tasks."app:render-single"]
+description = "Render a single event from a datastore post directory."
+run = "${CONTAINER_RUNTIME_SUDO} ${CONTAINER_RUNTIME} compose run --rm ${COMPOSE_RUN_FLAGS} --entrypoint python app /app/render_single_event.py"
+
 [tasks."site:build_events"]
 description = "Generate qmd files from _events/*"
 run = """
