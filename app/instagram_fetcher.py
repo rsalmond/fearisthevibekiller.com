@@ -251,7 +251,11 @@ class InstagramFetcher:
                     if chunk:
                         handle.write(chunk)
             return True
-        print(f"Failed to download media URL: {url} (status {responses[-1].status_code})")
+        LOGGER.warning(
+            "Failed to download media URL: %s (status %s)",
+            url,
+            responses[-1].status_code,
+        )
         return False
 
     def _refresh_media_urls(self, post: FetchedPost) -> Tuple[List[str], List[str]]:
@@ -378,7 +382,7 @@ def fetch_accounts(
             posts = fetcher.fetch_recent_posts(account)
         except Exception as exc:
             if should_log_errors():
-                print(f"Failed to fetch posts for {account}: {exc}")
+                LOGGER.warning("Failed to fetch posts for %s: %s", account, exc)
             continue
         LOGGER.debug("Processing %d posts for %s", len(posts), account)
         saved_for_account = 0

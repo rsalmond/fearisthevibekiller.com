@@ -14,6 +14,7 @@ from datastore import PostKey, PostStore, ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
 from event_listing_classifier import EventListingClassifier
 from instagram_fetcher import FetchConfig, InstagramFetcher, fetch_accounts, load_accounts
+from logging_setup import configure_logging
 from paths import (
     DEFAULT_ACCOUNTS,
     DEFAULT_DATASTORE,
@@ -655,11 +656,12 @@ def run_extract_event_metadata(args: argparse.Namespace) -> None:
 
 
 def run_progress_report(args: argparse.Namespace) -> None:
-    """Print pipeline progress metrics for the datastore."""
+    """Log pipeline progress metrics for the datastore."""
     datastore_path = datastore_root(args.datastore)
     events_dir = Path(args.events_dir).expanduser().resolve()
     counts = collect_progress_counts(datastore_path, events_dir)
-    print(build_progress_table(counts))
+    for line in build_progress_table(counts).splitlines():
+        LOGGER.info(line)
 
 
 def run_all(args: argparse.Namespace) -> None:
@@ -756,11 +758,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main() -> None:
     """Entry point for the CLI."""
-    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s %(name)s:%(lineno)d %(message)s",
-    )
+    configure_logging()
     logging.getLogger("instagrapi").setLevel(logging.INFO)
     logging.getLogger("urllib3").setLevel(logging.INFO)
     parser = build_parser()

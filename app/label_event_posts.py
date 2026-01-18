@@ -1,4 +1,5 @@
 import argparse
+import logging
 import random
 import shlex
 import shutil
@@ -7,7 +8,10 @@ from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 
 from datastore import PostKey, PostStore, datastore_root
 from event_listing_classifier import EventListingClassifier
+from logging_setup import configure_logging
 from paths import DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_TESTDATA
+
+LOGGER = logging.getLogger(__name__)
 
 
 def iter_posts(datastore_path: Path) -> Iterable[Tuple[PostStore, Path]]:
@@ -146,6 +150,7 @@ def format_media_list(store: PostStore) -> List[str]:
     """Return a list of media file paths as strings."""
     return [path.as_posix() for path in store.list_media_files()]
 
+
 def format_classification_summary(analysis: Optional[Dict]) -> str:
     """Return a human-readable summary of classification results."""
     if not analysis:
@@ -162,25 +167,25 @@ def format_classification_summary(analysis: Optional[Dict]) -> str:
 def print_post_details(
     store: PostStore, score: Optional[float] = None, analysis: Optional[Dict] = None
 ) -> None:
-    """Print a post's content, media paths, and optional classification data."""
+    """Log a post's content, media paths, and optional classification data."""
     metadata = store.load_metadata()
     caption = metadata.get("caption_text") or ""
 
-    print("\n---")
-    print(f"Post: {metadata.get('post_url')}")
-    print("Caption:")
-    print(caption if caption else "(no caption)")
-    print("Media files:")
+    LOGGER.info("---")
+    LOGGER.info("Post: %s", metadata.get("post_url"))
+    LOGGER.info("Caption:")
+    LOGGER.info("%s", caption if caption else "(no caption)")
+    LOGGER.info("Media files:")
     media_files = format_media_list(store)
     if media_files:
         for path in media_files:
-            print(f"  {path}")
+            LOGGER.info("  %s", path)
     else:
-        print("  (no media files found)")
+        LOGGER.info("  (no media files found)")
     if score is not None:
-        print(f"Classifier score: {score:.3f}")
+        LOGGER.info("Classifier score: %.3f", score)
     if analysis is not None:
-        print(f"Classification: {format_classification_summary(analysis)}")
+        LOGGER.info("Classification: %s", format_classification_summary(analysis))
 
 
 def prompt_label(store: PostStore, score: Optional[float] = None) -> Optional[bool]:
@@ -197,7 +202,7 @@ def prompt_label(store: PostStore, score: Optional[float] = None) -> Optional[bo
             return None
         if choice in {"x", "quit", "exit"}:
             raise KeyboardInterrupt
-        print("Please enter y, n, s, or x.")
+        LOGGER.info("Please enter y, n, s, or x.")
 
 
 def build_copy_commands(
@@ -281,6 +286,7 @@ def main() -> None:
     """Run an interactive labeling session for event classifier test data."""
     parser = build_parser()
     args = parser.parse_args()
+    configure_logging()
 
     datastore_path = datastore_root(args.datastore)
     testdata_root = Path(args.testdata_root).expanduser().resolve()
@@ -294,7 +300,7 @@ def main() -> None:
         terms = load_qmd_search_terms(events_dir)
         candidates = filter_posts_by_terms(candidates, terms)
     if not candidates:
-        print("No eligible posts found (all posts already in testdata).")
+        LOGGER.info("No eligible posts found (all posts already in testdata).")
         return
 
     if args.list_classifications:
@@ -336,15 +342,15 @@ def main() -> None:
             copy_post_to_label_dir(post_dir, result, testdata_root)
             labeled += 1
     except KeyboardInterrupt:
-        print("\nLabeling stopped.")
+        LOGGER.info("Labeling stopped.")
 
     if not selections:
-        print("No labels recorded.")
+        LOGGER.info("No labels recorded.")
         return
 
-    print("\nCopy commands:")
+    LOGGER.info("Copy commands:")
     for cmd in build_copy_commands(selections, testdata_root):
-        print(cmd)
+        LOGGER.info("%s", cmd)
 
 
 if __name__ == "__main__":

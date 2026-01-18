@@ -9,6 +9,7 @@
 
 #!/usr/bin/env python3
 
+import logging
 import os
 import re
 import sys
@@ -19,16 +20,20 @@ from datetime import date
 from typing import List
 from dataclasses import dataclass
 
+from logging_setup import configure_logging
 from paths import DATA_ROOT
 
 PAST_EVENTS = {}
 FUTURE_EVENTS = {}
+LOGGER = logging.getLogger(__name__)
 
 
 class Event:
+    """Wrap an event file on disk and expose parsed metadata."""
     path: Path
 
     def __init__(self, path: str):
+        """Initialize the event wrapper with a file path."""
         self.path = Path(path)
 
     @property
@@ -47,13 +52,16 @@ class Event:
 
     @property
     def content(self) -> str:
+        """Return the raw content of the event file."""
         with self.path.open(mode="r") as f:
             return f.read()
 
     def __lt__(self, other) -> int:
+        """Sort events by name."""
         return self.name < other.name
 
     def __repr__(self) -> str:
+        """Return a readable identifier for debug output."""
         return self.name
 
 
@@ -105,26 +113,32 @@ def render_events(target_date: date, event_list: List[Event]) -> str:
 
 
 def read_tmpl(filename: str) -> str:
+    """Read a template file from the _templates directory."""
     tmpl_path = os.path.join(os.getcwd(), "_templates", filename)
     with Path(tmpl_path).open(mode="r") as f:
         return f.read()
 
 
 def get_footer(template: str) -> str:
+    """Return the footer template for an events page."""
     return read_tmpl(f"{template}.footer.tmpl")
 
 
 def get_header(template: str) -> str:
+    """Return the header template for an events page."""
     return read_tmpl(f"{template}.header.tmpl")
 
 
 @click.group()
 def cli():
+    """Render future or past event listings."""
+    configure_logging()
     pass
 
 
 @cli.command()
 def future():
+    """Render future events to stdout."""
     load_events()
     future_rendered = get_header("future_events")
     for k, v in sorted(FUTURE_EVENTS.items()):
@@ -132,11 +146,14 @@ def future():
 
     future_rendered += get_footer("future_events")
 
-    print(future_rendered)
+    total_events = sum(len(events) for events in FUTURE_EVENTS.values())
+    LOGGER.info("Rendered %d future events across %d dates", total_events, len(FUTURE_EVENTS))
+    click.echo(future_rendered)
 
 
 @cli.command
 def past():
+    """Render past events to stdout."""
     load_events()
     past_rendered = get_header("past_events")
     for k, v in sorted(PAST_EVENTS.items(), reverse=True):
@@ -144,7 +161,9 @@ def past():
 
     past_rendered += get_footer("past_events")
 
-    print(past_rendered)
+    total_events = sum(len(events) for events in PAST_EVENTS.values())
+    LOGGER.info("Rendered %d past events across %d dates", total_events, len(PAST_EVENTS))
+    click.echo(past_rendered)
 
 
 if __name__ == "__main__":

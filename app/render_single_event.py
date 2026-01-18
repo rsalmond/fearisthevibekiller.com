@@ -11,9 +11,12 @@ from instagrapi.exceptions import LoginRequired
 
 from datastore import ProfileCache, datastore_root
 from event_extractor import extract_event_metadata_from_post
+from logging_setup import configure_logging
 from main import choose_ticket_link, enrich_dj_links
 from paths import DEFAULT_DATASTORE, DEFAULT_EVENTS_DIR, DEFAULT_SESSION
 from template_renderer import event_filename, load_template, render_template
+
+LOGGER = logging.getLogger(__name__)
 
 
 def load_instagram_client(session_file: Path) -> Client:
@@ -138,11 +141,7 @@ def main() -> None:
     """Render a template for a single labeled event post."""
     parser = build_parser()
     args = parser.parse_args()
-    log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
-    logging.basicConfig(
-        level=log_level,
-        format="%(levelname)s %(name)s:%(lineno)d %(message)s",
-    )
+    configure_logging()
 
     post_dir = Path(args.post_dir).expanduser().resolve()
     metadata = load_post_metadata(post_dir)
@@ -183,7 +182,7 @@ def main() -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
     output_path = output_dir / event_filename(event_data)
     output_path.write_text(rendered)
-    print(output_path.as_posix())
+    LOGGER.info("Rendered event template: %s", output_path.as_posix())
 
 
 if __name__ == "__main__":
