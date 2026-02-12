@@ -4,36 +4,18 @@ date-modified: today
 language:
   title-block-modified: "Last Updated"
 ---
-## Friday February 6, 2026
-
-<!-- event-meta: post_url=https://www.instagram.com/p/DT6Q928kVrn; ticket_link=https://www.instagram.com/p/DT6Q928kVrn; event_date=2026-02-06; event_name=official unofficial afterparty for THE MOMENT -->
-### 👉 official unofficial afterparty for THE MOMENT
-
-Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
-
-#### 10:00pm-late
-
-*
-
-[Info](https://www.instagram.com/p/DT6Q928kVrn)
-
-
 ## Friday February 13, 2026
 
 <!-- event-meta: post_url=https://www.instagram.com/p/DUCEv7lEcbI; ticket_link=https://www.instagram.com/p/DUCEv7lEcbI; event_date=2026-02-13; event_name=Uptown Rinse 012 -->
 ### 👉 Uptown Rinse 012
 
-Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
+Location: [Roost Uptown](https://www.instagram.com/roostuptown/) @ [85 King St. N. Waterloo](https://maps.app.goo.gl/3s4r8vGwHnKmMqUN7)
 
-#### 9:00pm-2:00pm
+#### 9pm-2am
 
-* DENIM
+* [DJ Denim](https://www.instagram.com/cammatthewmusicandart/)
 * [MAGNATECH](https://www.instagram.com/magnatechmusic/)
 * [DJ NVUS](https://www.instagram.com/joefieldm)
-* [cammatthewmusicandart](https://www.instagram.com/cammatthewmusicandart/)
-* [roostuptown](https://www.instagram.com/roostuptown/)
-* [magnatechmusic](https://www.instagram.com/magnatechmusic/)
-* [joefieldm](https://www.instagram.com/joefieldm/)
 
 [Info](https://www.instagram.com/p/DUCEv7lEcbI)
 
