@@ -70,10 +70,8 @@ def iter_events():
     events_path = DATA_ROOT / "_events"
     for file in events_path.iterdir():
         if file.is_file():
-            # checx for files which begin with date in MM-DD-YYYY format
-            if re.match(r"^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])-\d{4}", file.name):
-                if file.name.endswith(".qmd"):
-                    yield file
+            if file.name.endswith(".qmd"):
+                yield file
 
 
 def load_events():
@@ -85,6 +83,7 @@ def load_events():
 
     for event_file in iter_events():
         event = Event(event_file)
+        LOGGER.debug(f"Processing event: {event}")
         if event.date < today:
             if event.date not in PAST_EVENTS:
                 PAST_EVENTS[event.date] = []
