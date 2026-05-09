@@ -4,6 +4,19 @@ date-modified: today
 language:
   title-block-modified: "Last Updated"
 ---
+## Friday May 8, 2026
+
+### 👉 Dinner and Dancing
+
+Location: The Yeti @ [14 Eby St N, Kitchener](https://maps.app.goo.gl/beeXFx8uwKqUmAif9)
+
+#### Dinner from 5pm-10pm, Dancing from 9:30pm-late
+
+* [Danasonic](https://www.instagram.com/danasonic_/)
+
+[Info](https://www.instagram.com/p/DXt1uGOjgJO/)
+
+
 ## Monday May 4, 2026
 
 ### 👉 Under The Bridge
@@ -234,18 +247,6 @@ Location: Conrad Centre for the Performing Arts @ [36 King St W, Kitchener, ON N
 [Tickets](https://www.eventbrite.ca/e/leo-full-moon-ecstatic-dance-party-cacao-ceremony-tickets-1979505687799)
 
 
-<!-- event-meta: post_url=https://www.instagram.com/p/DTikUR9j6ar/; ticket_link=https://www.instagram.com/p/DTikUR9j6ar/; event_date=2026-01-30; event_name=Leo Full Moon - Ecstatic Dance Party & Cacao Ceremony -->
-### 👉 Leo Full Moon - Ecstatic Dance Party & Cacao Ceremony
-
-Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
-
-#### 7:00pm-11:59pm
-
-* [Kasha](https://linktr.ee/kashalikekesha)
-
-[Info](https://www.instagram.com/p/DTikUR9j6ar/)
-
-
 ## Thursday January 29, 2026
 
 <!-- event-meta: post_url=https://www.instagram.com/p/DTpHLxpjoZg; ticket_link=https://www.instagram.com/p/DTpHLxpjoZg; event_date=2026-01-29; event_name=Open Decks KW -->
@@ -273,21 +274,6 @@ Location: Counterpoint Brewing @ [1601 Victoria St. N](https://maps.app.goo.gl/3
 * [DJ Jace](https://www.instagram.com/dj_jace_jrfit/)
 
 [Info](https://www.instagram.com/p/DTI1jhTjsNs/)
-
-
-## Friday January 23, 2026
-
-<!-- event-meta: post_url=https://www.instagram.com/p/DTsLt0vkdeg; ticket_link=https://www.instagram.com/p/DTsLt0vkdeg; event_date=2026-01-23; event_name=Sylent Syd's Pop Shop -->
-### 👉 Sylent Syd's Pop Shop
-
-Location: <LOCATION NAME> @ [LOCATION ADDRESS](GOOGLE MAPS LINK)
-
-#### 8:00pm-11:00pm
-
-* [Sylent Syd](https://www.mixcloud.com/sylentsyd/the-one-armed-octopus-aka-pus/)
-* [grandsurflounge](https://www.grandtrunksaloon.com/the-surf)
-
-[Info](https://www.instagram.com/p/DTsLt0vkdeg)
 
 
 ## Saturday January 17, 2026
