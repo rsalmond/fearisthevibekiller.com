@@ -1,0 +1,83 @@
+name: render
+
+on:
+  schedule:
+  - cron: '0 7 * * *' # daily at midnight (in whatever timezone github runs)
+  workflow_dispatch:
+
+env:
+  ACTIONS_RUNNER_DEBUG: true
+
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup Git
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Setup mise
+      uses: jdx/mise-action@v2
+
+    - name: Install mise tools
+      run: |
+        mise install
+
+    - name: Install Quarto
+      uses: quarto-dev/quarto-actions/setup@v2
+      with:
+        version: '1.8.26'
+
+    - name: Render
+      run: |
+        mise "site:build"
+
+    - name: Check for significant changes
+      id: significant
+      run: |
+        if git diff --quiet -- site/index.qmd; then
+          echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          exit 0
+        fi
+        echo "has_changes=true" >> "$GITHUB_OUTPUT"
+
+    - name: Create branch
+      if: steps.significant.outputs.has_changes == 'true'
+      run: |
+        BRANCH_NAME=auto/update-$(date +%b-%d-%Y)
+        git checkout -b "$BRANCH_NAME"
+        echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+    - name: Commit all changes
+      if: steps.significant.outputs.has_changes == 'true'
+      run: |
+        git add -A
+        git commit -m "Automated render update"
+
+    - name: Push branch
+      if: steps.significant.outputs.has_changes == 'true'
+      env:
+        BRANCH_NAME: ${{ env.BRANCH_NAME }}
+      run: |
+        git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+        git push --force --set-upstream origin "$BRANCH_NAME"
+
+    - name: Open pull request
+      if: steps.significant.outputs.has_changes == 'true'
+      uses: peter-evans/create-pull-request@v6
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ env.BRANCH_NAME }}
+        base: main
+        title: "Automated update – ${{ env.BRANCH_NAME }}"
+        body: "Render produced significant changes."
